@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background: #0f0f0f; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        .logo-container { text-align: center; animation: pulse 2s infinite; }
+        .logo-icon { width: 80px; height: 80px; background: linear-gradient(45deg, #00f2fe, #4facfe); border-radius: 20%; margin-bottom: 15px; display: inline-block; box-shadow: 0 0 20px #00f2fe; }
+        h1 { color: white; letter-spacing: 5px; font-size: 24px; margin: 0; }
+        .loader { width: 100px; height: 3px; background: #333; margin: 20px auto; position: relative; }
+        .loader-bar { width: 0%; height: 100%; background: #00f2fe; animation: load 5s linear forwards; }
+        @keyframes load { to { width: 100%; } }
+        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <div class="logo-icon"></div>
+        <h1>AS-EDITOR</h1>
+        <div class="loader"><div class="loader-bar"></div></div>
+    </div>
+</body>
+</html>
