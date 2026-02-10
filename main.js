@@ -1,139 +1,96 @@
-/* * AS-EDITOR CORE ENGINE v2.0
- * Backend Logic & FFmpeg Bridge
- * -----------------------------
- * Handles native processes, memory allocation, and video rendering pipelines.
- */
-
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
 const ffprobePath = require('ffprobe-static');
-const fs = require('fs');
 
-// Configuración del motor de video
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath.path);
 
 let mainWindow;
-let splashWindow;
 
-// --- GESTIÓN DE VENTANAS PROFESIONAL ---
-function createWindows() {
-    // 1. Splash Screen (Carga de Módulos)
-    splashWindow = new BrowserWindow({
-        width: 600, height: 400,
-        transparent: true, frame: false, alwaysOnTop: true,
-        icon: path.join(__dirname, 'icon.ico'),
-        webPreferences: { nodeIntegration: true }
-    });
-    splashWindow.loadFile('splash.html');
-
-    // 2. Main Workstation (Oculta hasta carga completa)
+function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 1600, height: 900, // Resolución HD por defecto
-        minWidth: 1024, minHeight: 768,
-        show: false,
-        frame: false, // Estilo Custom (VS Code)
-        backgroundColor: '#1e1e1e',
+        width: 1400, height: 900,
+        frame: false,
+        backgroundColor: '#121212',
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            webSecurity: false, // Necesario para vista previa local
-            enableRemoteModule: true
+            webSecurity: false
         }
     });
     mainWindow.loadFile('index.html');
-
-    // Simulación de carga de módulos pesados (7 segundos reales)
-    setTimeout(() => {
-        if (splashWindow && !splashWindow.isDestroyed()) splashWindow.close();
-        mainWindow.show();
-        mainWindow.maximize();
-    }, 7000);
 }
 
-app.whenReady().then(createWindows);
+app.whenReady().then(createWindow);
 
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit();
-});
-
-// --- MOTOR DE PROCESAMIENTO DE VIDEO (REAL) ---
-
-ipcMain.on('get-video-info', (event, filePath) => {
-    ffmpeg.ffprobe(filePath, (err, metadata) => {
-        if (err) {
-            event.reply('console-log', { type: 'error', msg: `Error analizando metadata: ${err.message}` });
-        } else {
-            event.reply('video-metadata', metadata);
-            event.reply('console-log', { type: 'info', msg: `Metadata cargada: ${metadata.format.duration}s @ ${metadata.streams[0].width}x${metadata.streams[0].height}` });
-        }
-    });
-});
-
-ipcMain.on('render-sequence', (event, task) => {
-    /* * EL NÚCLEO DEL RENDERIZADO
-     * Recibe un objeto 'task' con todas las opciones (filtros, codec, bitrate)
-     * y construye el comando FFmpeg dinámicamente.
-     */
+// --- MOTOR DE PROCESAMIENTO FFmpeg AVANZADO ---
+ipcMain.on('render-sequence', (event, data) => {
+    const { filePath, params } = data;
+    const output = path.join(path.dirname(filePath), `AS_PRO_${Date.now()}.${params.format}`);
     
-    const { filePath, options, filters } = task;
-    const outputPath = path.join(path.dirname(filePath), `AsEditor_Render_${Date.now()}.mp4`);
-    
-    event.reply('console-log', { type: 'system', msg: 'Iniciando Motor de Renderizado...' });
-    event.reply('console-log', { type: 'system', msg: `Salida: ${outputPath}` });
+    event.reply('console-log', { type: 'system', msg: 'Construyendo Grafo de Filtros...' });
 
     let command = ffmpeg(filePath);
+    let filters = [];
 
-    // 1. Aplicar Filtros de Video (Cadena compleja)
-    let videoFilters = [];
+    // 1. Corrección de Color (EQ)
+    let eqParts = [];
+    if(params.eq_contrast != 1) eqParts.push(`contrast=${params.eq_contrast}`);
+    if(params.eq_brightness != 0) eqParts.push(`brightness=${params.eq_brightness}`);
+    if(params.eq_saturation != 1) eqParts.push(`saturation=${params.eq_saturation}`);
+    if(params.eq_gamma != 1) eqParts.push(`gamma=${params.eq_gamma}`);
+    if(params.eq_gamma_r != 1) eqParts.push(`gamma_r=${params.eq_gamma_r}`);
+    if(params.eq_gamma_g != 1) eqParts.push(`gamma_g=${params.eq_gamma_g}`);
+    if(params.eq_gamma_b != 1) eqParts.push(`gamma_b=${params.eq_gamma_b}`);
     
-    if (filters.contrast !== 1) videoFilters.push(`eq=contrast=${filters.contrast}`);
-    if (filters.brightness !== 0) videoFilters.push(`eq=brightness=${filters.brightness}`);
-    if (filters.saturation !== 1) videoFilters.push(`eq=saturation=${filters.saturation}`);
-    if (filters.grayscale) videoFilters.push('hue=s=0');
-    if (filters.invert) videoFilters.push('negate');
-    if (filters.noise > 0) videoFilters.push(`noise=alls=${filters.noise}:allf=t+u`);
+    if(eqParts.length > 0) filters.push(`eq=${eqParts.join(':')}`);
+
+    // 2. Efectos Visuales
+    if(params.noise > 0) filters.push(`noise=alls=${params.noise}:allf=t+u`);
+    if(params.sharpen > 0) filters.push(`unsharp=5:5:${params.sharpen}:5:5:0`);
+    if(params.blur > 0) filters.push(`gblur=sigma=${params.blur}`);
+    if(params.vignette > 0) filters.push(`vignette=PI/4`); // Simplificado para estabilidad
+    if(params.negate) filters.push('negate');
     
-    if (videoFilters.length > 0) {
-        command.videoFilters(videoFilters);
+    // 3. Transformaciones
+    if(params.lens_zoom > 1) {
+        // Zoom central complejo
+        let z = params.lens_zoom;
+        filters.push(`scale=${z}*iw:-1,crop=iw/${z}:ih/${z}`);
     }
+    
+    // 4. Audio DSP
+    let audioFilters = [];
+    if(params.vol != 100) audioFilters.push(`volume=${params.vol/100}`);
+    if(params.highpass > 0) audioFilters.push(`highpass=f=${params.highpass}`);
+    if(params.lowpass < 20000) audioFilters.push(`lowpass=f=${params.lowpass}`);
+    if(params.echo > 0) audioFilters.push(`aecho=0.8:0.9:1000:0.3`); // Eco simple
 
-    // 2. Opciones de Codec y Calidad
+    // APLICAR FILTROS
+    if(filters.length > 0) command.videoFilters(filters);
+    if(audioFilters.length > 0) command.audioFilters(audioFilters);
+
+    // Renderizado
     command
-        .videoCodec('libx264')
-        .audioCodec('aac')
         .outputOptions([
-            '-preset medium', // Balance velocidad/calidad
-            '-crf 23',        // Calidad constante
-            '-movflags +faststart'
-        ]);
-
-    // 3. Ejecución y Monitoreo
-    command
-        .on('start', (cmdLine) => {
-            event.reply('console-log', { type: 'info', msg: `Comando FFmpeg generado.` });
-            console.log(cmdLine); // Para debug interno
-        })
-        .on('progress', (progress) => {
-            // Envía porcentaje real a la barra de progreso
-            event.reply('render-progress', progress.percent);
+            `-b:v ${params.bitrate}M`,
+            `-preset ${params.preset}`
+        ])
+        .on('progress', (p) => event.reply('render-progress', p.percent))
+        .on('end', () => {
+            event.reply('render-complete', { success: true, path: output });
+            shell.showItemInFolder(output);
         })
         .on('error', (err) => {
-            event.reply('console-log', { type: 'error', msg: `FALLO CRÍTICO DE RENDER: ${err.message}` });
-            event.reply('render-complete', { success: false });
+            event.reply('console-log', { type: 'error', msg: err.message });
+            console.log(err);
         })
-        .on('end', () => {
-            event.reply('console-log', { type: 'success', msg: 'Renderizado Finalizado Exitosamente.' });
-            event.reply('render-complete', { success: true, path: outputPath });
-            // Abrir carpeta al finalizar
-            shell.showItemInFolder(outputPath);
-        })
-        .save(outputPath);
+        .save(output);
 });
 
-// Controles de ventana personalizados
-ipcMain.on('win-minimize', () => mainWindow.minimize());
-ipcMain.on('win-maximize', () => mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize());
+// Controles de ventana
+ipcMain.on('win-min', () => mainWindow.minimize());
+ipcMain.on('win-max', () => mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize());
 ipcMain.on('win-close', () => mainWindow.close());
