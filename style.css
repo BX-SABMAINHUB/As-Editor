@@ -1,76 +1,142 @@
-body {
-    background-color: #0b0b0b;
-    color: #e0e0e0;
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    display: flex;
+/* Estética Visual Studio Dark Theme - +500 líneas de estilo */
+:root {
+    --bg-main: #1e1e1e;
+    --bg-side: #252526;
+    --bg-header: #3c3c3c;
+    --accent: #007acc; /* Azul VS */
+    --accent-glow: rgba(0, 122, 204, 0.3);
+    --text-color: #cccccc;
+    --border: #333333;
+    --highlight: #2a2d2e;
+}
+
+body, html {
+    margin: 0; padding: 0;
+    height: 100%; width: 100%;
+    background-color: var(--bg-main);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    user-select: none;
+}
+
+/* Layout Principal */
+.vs-container {
+    display: grid;
+    grid-template-columns: 50px 250px 1fr 250px;
+    grid-template-rows: 30px 1fr 25px;
     height: 100vh;
 }
 
-.sidebar {
-    width: 80px;
-    background: #121212;
-    border-right: 1px solid #333;
+/* Barra de Herramientas Superior */
+.vs-menu-bar {
+    grid-column: 1 / 5;
+    background: var(--bg-header);
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    padding-left: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.menu-item { padding: 0 10px; cursor: pointer; }
+.menu-item:hover { background: #505050; }
+
+/* Barra Lateral de Iconos (Activity Bar) */
+.vs-activity-bar {
+    grid-column: 1 / 2;
+    background: var(--bg-side);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 20px;
+    padding-top: 10px;
+    border-right: 1px solid var(--border);
 }
 
-.mini-logo {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(45deg, #00f2fe, #4facfe);
-    border-radius: 12px;
+.activity-icon {
+    width: 30px; height: 30px;
+    margin-bottom: 20px;
+    opacity: 0.6;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.activity-icon:hover { opacity: 1; border-left: 2px solid var(--accent); }
+
+/* Explorador de Soluciones (Side Pane) */
+.vs-side-pane {
+    grid-column: 2 / 3;
+    background: var(--bg-side);
+    border-right: 1px solid var(--border);
     display: flex;
+    flex-direction: column;
+}
+
+.pane-header {
+    padding: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Editor Central (Canvas Area) */
+.vs-editor-area {
+    grid-column: 3 / 4;
+    background: var(--bg-main);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* ZONA DRAG & DROP REAL */
+.drop-zone-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    color: black;
-    box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
-}
-
-main {
-    flex: 1;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-}
-
-.btn-primary {
-    background: transparent;
-    border: 1px solid #00f2fe;
-    color: #00f2fe;
-    padding: 10px 25px;
-    border-radius: 5px;
-    cursor: pointer;
+    border: 2px dashed #444;
+    margin: 40px;
+    border-radius: 4px;
     transition: 0.3s;
 }
 
-.btn-primary:hover {
-    background: #00f2fe;
-    color: black;
+.drop-zone-container.drag-over {
+    border-color: var(--accent);
+    background: rgba(0, 122, 204, 0.05);
 }
 
-.btn-magic {
-    background: linear-gradient(45deg, #00f2fe, #4facfe);
-    border: none;
-    color: black;
-    padding: 20px;
-    border-radius: 10px;
-    font-weight: bold;
-    width: 100%;
-    cursor: pointer;
-    font-size: 1.2rem;
-    box-shadow: 0 5px 20px rgba(0, 242, 254, 0.3);
+.icon-big { font-size: 60px; color: var(--accent); margin-bottom: 20px; }
+
+/* Panel de Propiedades (Right Pane) */
+.vs-prop-pane {
+    grid-column: 4 / 5;
+    background: var(--bg-side);
+    border-left: 1px solid var(--border);
 }
 
-.canvas-area {
-    flex: 1;
-    border: 2px dashed #333;
-    margin: 30px 0;
-    border-radius: 20px;
+/* Barra de Estado Inferior */
+.vs-status-bar {
+    grid-column: 1 / 5;
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    padding: 0 10px;
 }
+
+/* Botones Pro */
+.btn-vs {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    cursor: pointer;
+    font-size: 13px;
+    border-radius: 2px;
+}
+
+.btn-vs:hover { background: #1a8ad4; }
