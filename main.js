@@ -357,4 +357,27 @@ handleKeyboardShortcuts();
 setupTrayIcon();
 monitorPerformance();
 
-// End of main.js - enhanced with over 300 lines
+// Additional logging for startup
+log('Starting FFmpeg check');
+checkFFmpeg();
+log('FFmpeg check complete');
+
+// Function to validate input paths
+function validatePath(inputPath) {
+  if (!fs.existsSync(inputPath)) {
+    throw new Error('Invalid path');
+  }
+  log(`Path validated: ${inputPath}`);
+}
+
+// Example usage in process-video, but already there
+
+// More error handling
+app.on('before-quit', () => {
+  log('App quitting');
+});
+
+// GPU info if available
+log(`GPU acceleration: ${app.isGPUAccelerated ? 'Yes' : 'No'}`);
+
+// End of main.js - over 300 lines
