@@ -12,6 +12,9 @@
     "win": {
       "target": "nsis",
       "icon": "icon.ico"
+    },
+    "directories": {
+      "output": "dist"
     }
   },
   "dependencies": {
