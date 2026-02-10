@@ -1,30 +1,96 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <link rel="stylesheet" href="style.css">
-    <title>As-Editor AI</title>
+    <title>As-Editor AI Studio</title>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="mini-logo">AE</div>
-        <nav>
-            <div class="nav-item active">Editor</div>
-            <div class="nav-item">Librería</div>
-        </nav>
-    </div>
-    <main>
-        <header>
-            <h2>AI Video Developer</h2>
-            <button class="btn-primary" id="uploadBtn">SUBIR VIDEO</button>
-        </header>
-        <div class="canvas-area">
-            <div id="dropZone" class="drop-zone">
-                <p>Arrastra tu video aquí o usa el botón superior</p>
+    <div class="vs-container">
+        <div class="vs-menu-bar">
+            <span class="menu-item">Archivo</span>
+            <span class="menu-item">Editar</span>
+            <span class="menu-item">Vista</span>
+            <span class="menu-item">IA-Herramientas</span>
+            <span class="menu-item">Ayuda</span>
+        </div>
+
+        <div class="vs-activity-bar">
+            <div class="activity-icon">📁</div>
+            <div class="activity-icon">🔍</div>
+            <div class="activity-icon">⚙️</div>
+            <div class="activity-icon">🤖</div>
+        </div>
+
+        <div class="vs-side-pane">
+            <div class="pane-header">Explorador de Archivos <span>...</span></div>
+            <div style="padding: 10px; font-size: 12px; color: #888;">
+                > Proyecto_Video_01<br>
+                &nbsp;&nbsp;&nbsp;> Media<br>
+                &nbsp;&nbsp;&nbsp;> Efectos_IA
             </div>
         </div>
-        <footer>
-            <button class="btn-magic" id="magicBtn">GENERAR EDICIÓN IA</button>
-        </footer>
-    </main>
+
+        <div class="vs-editor-area">
+            <div id="dropZone" class="drop-zone-container">
+                <div class="icon-big">📽️</div>
+                <h2 style="color:white; margin:0;">Arrastra tu video profesional aquí</h2>
+                <p style="color:#666;">Formatos compatibles: MP4, MKV, MOV, AVI</p>
+                <button class="btn-vs" id="selectBtn" style="margin-top:20px;">EXAMINAR ARCHIVOS</button>
+            </div>
+        </div>
+
+        <div class="vs-prop-pane">
+            <div class="pane-header">Propiedades de IA</div>
+            <div style="padding:15px;">
+                <label style="font-size:11px;">Intensidad Flash:</label>
+                <input type="range" style="width:100%;">
+                <br><br>
+                <label style="font-size:11px;">Sensibilidad Ritmo:</label>
+                <input type="range" style="width:100%;">
+                <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+                <button class="btn-vs" id="magicBtn" style="width:100%;">EJECUTAR RENDERIZADO</button>
+            </div>
+        </div>
+
+        <div class="vs-status-bar">
+            <span>Listo</span>
+            <span style="margin-left:auto;">UTF-8 | IA-Engine: v2.0.6 | Master</span>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        const dropZone = document.getElementById('dropZone');
+        let selectedFile = null;
+
+        // Lógica de Arrastrar y Soltar (Drag & Drop)
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        document.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if(file && file.path) {
+                selectedFile = file.path;
+                alert("Video detectado: " + file.name);
+            }
+        });
+
+        document.getElementById('magicBtn').onclick = () => {
+            if(!selectedFile) return alert("Carga un video primero");
+            ipcRenderer.send('process-video', selectedFile);
+        };
+
+        ipcRenderer.on('finished', (event, path) => {
+            alert("Renderizado Completo en: " + path);
+        });
+    </script>
 </body>
 </html>
