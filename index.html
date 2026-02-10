@@ -3,59 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
-    <title>As-Editor Pro | Workstation 2026</title>
+    <title>As-Editor Pro | Multi-Project Edition</title>
 </head>
 <body>
     <div class="vs-header">
-        <div class="vs-menu">
-            <span class="vs-brand">AS-EDITOR PRO</span>
-            <span>Archivo</span><span>Editar</span><span>Visualización</span><span>IA</span>
-        </div>
-        <div class="vs-window-title">As-Editor Pro - Studio Environment</div>
+        <div class="vs-menu"><span class="vs-brand">AS-EDITOR PRO</span> <span>File</span><span>Edit</span><span>AI</span></div>
         <div class="vs-controls">
-            <button onclick="ipcRenderer.send('min')">－</button>
-            <button onclick="ipcRenderer.send('max')">⬜</button>
-            <button onclick="ipcRenderer.send('close')" class="vs-close">✕</button>
+            <button onclick="ipcRenderer.send('win-min')">－</button>
+            <button onclick="ipcRenderer.send('win-close')" class="vs-close">✕</button>
         </div>
     </div>
 
     <div class="vs-body">
-        <div class="vs-activity-bar">
-            <div class="vs-icon active">📁</div>
-            <div class="vs-icon">⚙️</div>
-        </div>
+        <div class="vs-activity-bar"><div class="vs-icon active">📁</div><div class="vs-icon">⚙️</div></div>
 
         <div class="vs-sidebar">
-            <div class="vs-section-header">EXPLORADOR</div>
-            <div class="vs-tree">
-                <div class="vs-item folder">▼ PROYECTO_ACTUAL</div>
-                <div class="vs-item file" id="activeFile">Sin video...</div>
+            <div class="vs-section-header">EXPLORADOR: GESTOR DE MEDIOS</div>
+            <div id="explorerTree" class="vs-tree">
+                </div>
+            <div class="vs-sidebar-footer">
+                <button onclick="log('info', 'Nueva carpeta creada')">+ Nueva Carpeta</button>
             </div>
         </div>
 
         <div class="vs-editor-area">
-            <div class="vs-tabs"><div class="vs-tab active">Preview_Realtime.mp4</div></div>
+            <div class="vs-tabs" id="tabContainer"></div>
+            
             <div class="vs-video-container" id="dropZone">
                 <video id="videoPreview" controls></video>
-                <div id="dropText" class="vs-placeholder">
-                    <p>ARRASTRA TU VIDEO AQUÍ PARA EMPEZAR</p>
-                </div>
+                <div id="dropText" class="vs-placeholder">ARRASTRA VIDEOS AQUÍ</div>
             </div>
 
             <div class="vs-bottom-panel">
-                <div class="vs-panel-tabs">
-                    <div class="vs-panel-tab active">SALIDA DE CONSOLA</div>
-                </div>
+                <div class="vs-panel-tabs"><div class="vs-panel-tab active">TERMINAL DE SALIDA</div></div>
                 <div class="vs-output" id="consoleOutput"></div>
             </div>
         </div>
 
         <div class="vs-properties">
-            <div class="vs-section-header">CONTROLES DE VIDEO & IA</div>
+            <div class="vs-section-header">PARÁMETROS DEL CLIP</div>
             <div class="vs-scroll-options" id="optionsContainer"></div>
             <div class="vs-render-zone">
                 <div class="vs-progress-container"><div id="progressBar" class="vs-progress-fill"></div></div>
-                <button id="renderBtn" class="vs-btn-main">COMPILAR Y EXPORTAR (EXE)</button>
+                <button id="renderBtn" class="vs-btn-main">COMPILAR Y EXPORTAR CLIP</button>
             </div>
         </div>
     </div>
