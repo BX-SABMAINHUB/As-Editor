@@ -1,119 +1,62 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
-    <title>As-Editor Pro</title>
 </head>
 <body>
-
     <div class="title-bar">
-        <div class="app-icon">AS-EDITOR PRO</div>
-        <div class="window-controls">
-            <button onclick="ipcRenderer.send('win-minimize')">_</button>
-            <button onclick="ipcRenderer.send('win-maximize')">▢</button>
-            <button class="close" onclick="ipcRenderer.send('win-close')">✕</button>
+        <div style="font-weight:bold; letter-spacing:1px;">AS-EDITOR [ULTIMATE BUILD]</div>
+        <div style="display:flex; gap:10px;">
+            <div onclick="require('electron').ipcRenderer.send('win-min')" style="cursor:pointer">_</div>
+            <div onclick="require('electron').ipcRenderer.send('win-max')" style="cursor:pointer">▢</div>
+            <div onclick="require('electron').ipcRenderer.send('win-close')" style="cursor:pointer; color:#f44747;">✕</div>
         </div>
     </div>
 
-    <div class="main-container">
-        <div class="activity-bar">
-            <div class="act-icon active">📁</div>
-            <div class="act-icon">✂️</div>
-            <div class="act-icon">🎨</div>
-            <div class="act-icon">🔊</div>
-            <div class="act-icon">⚙️</div>
+    <div class="workspace">
+        <div class="panel-l" style="align-items:center; padding-top:10px;">
+            <div style="margin-bottom:20px; color:#0078d4;">📁</div>
+            <div style="margin-bottom:20px; color:#666;">✂️</div>
+            <div style="margin-bottom:20px; color:#666;">🎨</div>
+            <div style="margin-bottom:20px; color:#666;">🤖</div>
         </div>
 
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <span>Explorador de Proyecto</span>
-                <span>...</span>
-            </div>
-            <div class="file-tree" id="fileList">
-                <div>> PROYECTO_MASTER</div>
-                <div style="padding-left:10px; color: #ce9178;">[Esperando Archivos...]</div>
+        <div class="panel-l">
+            <div class="category-header">PROJECT MEDIA</div>
+            <div style="padding:10px; font-size:11px; color:#888;">
+                > Scene_01.mp4<br>> Audio_Track_Base<br>> FX_Layer_Alpha
             </div>
         </div>
 
-        <div class="editor-area" id="editorArea">
-            <div class="drop-zone" id="dropZone">
-                <h1>ARRASTRA TU VIDEO RAW AQUÍ</h1>
-                <p>Soporte Nativo: MP4, MKV, MOV, AVI (4K Ready)</p>
+        <div class="viewport" id="viewport">
+            <div id="dropText" style="text-align:center; color:#555;">
+                <h1 style="font-size:40px; margin:0;">⏏</h1>
+                <p>DROP MEDIA SOURCE</p>
             </div>
             <video id="videoPreview" controls style="display:none;"></video>
         </div>
 
-        <div class="properties-panel">
-            <div class="sidebar-header">PROPIEDADES & FILTROS</div>
-            
-            <div class="control-group">
-                <span class="control-label">CORRECCIÓN DE COLOR (LUT)</span>
-                
-                <span class="control-label">Contraste</span>
-                <input type="range" id="contrast" min="0" max="2" step="0.1" value="1">
-                
-                <span class="control-label">Brillo</span>
-                <input type="range" id="brightness" min="-1" max="1" step="0.1" value="0">
-                
-                <span class="control-label">Saturación</span>
-                <input type="range" id="saturation" min="0" max="3" step="0.1" value="1">
-                
-                <label style="font-size:11px; display:block; margin-top:5px;">
-                    <input type="checkbox" id="grayscale"> Blanco y Negro
-                </label>
-                <label style="font-size:11px; display:block;">
-                    <input type="checkbox" id="invert"> Invertir Colores
-                </label>
-            </div>
-
-            <div class="control-group">
-                <span class="control-label">FX / RUIDO DIGITAL</span>
-                <span class="control-label">Intensidad de Grano</span>
-                <input type="range" id="noise" min="0" max="100" value="0">
-            </div>
-
-            <div class="control-group">
-                <span class="control-label">CONFIGURACIÓN DE SALIDA</span>
-                <span class="control-label">Formato</span>
-                <select id="format">
-                    <option value="mp4">MP4 (H.264)</option>
-                    <option value="mov">MOV (ProRes Proxy)</option>
-                    <option value="avi">AVI (Uncompressed)</option>
-                    <option value="gif">GIF Animado</option>
-                </select>
-            </div>
-
-            <button class="btn-pro" id="renderBtn">RENDERIZAR PROYECTO</button>
-            
-            <div style="margin-top:20px;">
-                <span class="control-label">Estado del Render</span>
-                <div style="width:100%; height:5px; background:#333; margin-top:5px;">
-                    <div id="progressBar" style="width:0%; height:100%; background:var(--success); transition:0.2s;"></div>
+        <div class="panel-r">
+            <div class="category-header" style="background:#0078d4; text-align:center;">PROPERTIES & FX</div>
+            <div id="propertiesContainer">
                 </div>
-                <span id="progressText" style="font-size:10px; float:right;">0%</span>
-            </div>
-        </div>
-
-        <div class="terminal-area">
-            <div class="terminal-tabs">
-                <div class="tab active">SALIDA</div>
-                <div class="tab">DEBUG CONSOLE</div>
-                <div class="tab">TERMINAL</div>
-            </div>
-            <div class="terminal-output" id="consoleOutput">
-                <div class="log-system">AS-EDITOR PRO [Versión 2.0.0]</div>
-                <div class="log-system">Motor FFmpeg inicializado... LISTO.</div>
-                <div class="log-system">Esperando entrada de usuario...</div>
+            
+            <div class="render-btn-container">
+                <button id="renderBtn" class="btn-mega">RENDERIZAR MASTER FINAL</button>
             </div>
         </div>
     </div>
 
-    <div class="status-bar">
-        <span id="statusFile">Ningún archivo abierto</span>
-        <span>
-            MEM: 4096MB | GPU: ACTIVE | Render Engine: FFMPEG-STATIC
-        </span>
+    <div class="console-panel">
+        <div class="console-tabs">
+            <div class="tab active">OUTPUT</div>
+            <div class="tab">DEBUG</div>
+            <div class="tab">TERMINAL</div>
+            <div class="tab">GPU MONITOR</div>
+        </div>
+        <div class="console-log" id="consoleOutput">
+            <div class="log-ln"><span class="ln-sys">System Ready...</span></div>
+        </div>
     </div>
 
     <script src="renderer.js"></script>
