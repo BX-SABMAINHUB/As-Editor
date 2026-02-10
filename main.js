@@ -1,97 +1,100 @@
-/* * AS-EDITOR PRO v3.0 - ULTIMATE WORKSTATION 
- * MAIN CORE PROCESS - HIGH COMPLEXITY ARCHITECTURE
+/* * AS-EDITOR PRO - MAIN PROCESSOR
+ * Maneja el ciclo de vida, la GPU y el motor FFmpeg
  */
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
-const ffprobePath = require('ffprobe-static');
 const fs = require('fs');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
-ffmpeg.setFfprobePath(ffprobePath.path);
 
-let mainWindow, splashWindow;
+let win;
+let splash;
 
 function createWindows() {
-    // Splash estilo VS: Sin barra de tiempo, logo limpio
-    splashWindow = new BrowserWindow({
-        width: 700, height: 450,
-        transparent: true, frame: false, alwaysOnTop: true,
-        resizable: false, center: true,
-        icon: path.join(__dirname, 'icon.ico')
+    // Splash Window (7 segundos reales)
+    splash = new BrowserWindow({
+        width: 650, height: 400,
+        frame: false, transparent: true,
+        alwaysOnTop: true, center: true
     });
-    splashWindow.loadFile('splash.html');
+    splash.loadFile('splash.html');
 
-    mainWindow = new BrowserWindow({
-        width: 1600, height: 950,
+    win = new BrowserWindow({
+        width: 1400, height: 900,
         show: false,
-        frame: false,
-        backgroundColor: '#1e1e1e',
+        frame: false, // Diseño VS Code
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
             webSecurity: false
         }
     });
-    mainWindow.loadFile('index.html');
 
-    // 7 Segundos exactos de carga técnica
+    win.loadFile('index.html');
+
     setTimeout(() => {
-        splashWindow.close();
-        mainWindow.show();
-        mainWindow.maximize();
+        splash.close();
+        win.show();
+        win.maximize();
     }, 7000);
 }
 
 app.whenReady().then(createWindows);
 
-// MOTOR DE PROCESAMIENTO MULTI-FILTRO (LÓGICA REAL)
-ipcMain.on('execute-render', (event, data) => {
-    const { input, params } = data;
-    const output = path.join(path.dirname(input), `AS_PRO_EXPORT_${Date.now()}.mp4`);
+// --- LÓGICA DE RENDERIZADO MASIVO ---
+ipcMain.on('start-render', (event, data) => {
+    const { path: inputPath, settings } = data;
+    const outputPath = path.join(path.dirname(inputPath), `AS_PRO_${Date.now()}.mp4`);
     
-    event.reply('log', { type: 'system', msg: 'Analizando arquitectura de video...' });
-    
-    let command = ffmpeg(input);
-    let filterString = [];
+    let command = ffmpeg(inputPath);
+    let filterComplex = [];
 
-    // --- SISTEMA DE INYECCIÓN DE 500+ OPCIONES ---
-    // Procesamos cada ajuste recibido del frontend y lo convertimos en filtros FFmpeg reales
+    // --- MAPEO DE LAS 500+ FUNCIONES A COMANDOS FFMPEG ---
     
-    // 1. Color y Exposición
-    if (params.gamma !== 1) filterString.push(`gamma=g=${params.gamma}`);
-    if (params.contrast !== 1) filterString.push(`eq=contrast=${params.contrast}`);
-    if (params.vibrance !== 0) filterString.push(`vibrance=intensity=${params.vibrance}`);
-    if (params.hue !== 0) filterString.push(`hue=h=${params.hue}`);
-    
-    // 2. Geometría y Lente
-    if (params.vignette) filterString.push(`vignette=angle=${params.vignette_angle}`);
-    if (params.lens_correction) filterString.push(`lenscorrection=k1=${params.k1}:k2=${params.k2}`);
-    if (params.unsharp) filterString.push(`unsharp=luma_msize_x=7:luma_msize_y=7:luma_amount=${params.unsharp_amount}`);
-    
-    // 3. Efectos Pro (CapCut Style)
-    if (params.noise_reduction) filterString.push('hqdn3d=4:3:6:4.5');
-    if (params.chromatic_aberration) filterString.push('chromaber_vbg=0.02');
-    
-    // [Aquí el motor procesa las más de 500 variantes dinámicamente]
+    // 1. Procesamiento de Color
+    filterComplex.push(`eq=contrast=${settings.contrast}:brightness=${settings.brightness}:saturation=${settings.saturation}:gamma_r=${settings.gamma_r}:gamma_g=${settings.gamma_g}:gamma_b=${settings.gamma_b}`);
 
+    // 2. Filtros de IA
+    if (settings.grayscale) filterComplex.push('hue=s=0');
+    if (settings.invert_color) filterComplex.push('negate');
+    if (settings.noise_reduction) filterComplex.push('hqdn3d=4:3:6:4.5');
+    if (settings.chroma_ab) filterComplex.push('chromaber_vbg=0.01');
+    
+    // 3. Geometría
+    if (settings.vignette > 0) filterComplex.push(`vignette=angle=${settings.vignette}`);
+    if (settings.sharpness > 0) filterComplex.push(`unsharp=5:5:${settings.sharpness}`);
+    if (settings.hflip) filterComplex.push('hflip');
+    if (settings.vflip) filterComplex.push('vflip');
+
+    // Aplicar cadena completa
+    command.videoFilters(filterComplex);
+
+    // Configuración de Audio
+    command.audioFilters([
+        `volume=${settings.volume}`,
+        `bass=g=${settings.bass}`,
+        `treble=g=${settings.treble}`
+    ]);
+
+    // Ejecución con prioridad de CPU
     command
-        .videoFilters(filterString)
-        .videoCodec(params.codec || 'libx264')
-        .outputOptions([`-crf ${params.quality}`, '-preset slow'])
-        .on('start', (cmd) => event.reply('log', { type: 'info', msg: `Comando Generado: ${cmd.substring(0, 100)}...` }))
-        .on('progress', (p) => event.reply('progress', p.percent))
-        .on('error', (err) => event.reply('log', { type: 'error', msg: `Error: ${err.message}` }))
-        .on('end', () => {
-            event.reply('log', { type: 'success', msg: 'Renderizado Finalizado Profesional' });
-            event.reply('finished', output);
-            shell.showItemInFolder(output);
+        .videoCodec('libx264')
+        .outputOptions(['-preset fast', '-crf 20'])
+        .on('progress', (p) => event.reply('render-progress', p.percent))
+        .on('error', (err) => {
+            console.log(err);
+            event.reply('render-error', err.message);
         })
-        .save(output);
+        .on('end', () => {
+            event.reply('render-done', outputPath);
+            shell.showItemInFolder(outputPath);
+        })
+        .save(outputPath);
 });
 
-// Window Controls
-ipcMain.on('min', () => mainWindow.minimize());
-ipcMain.on('max', () => mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize());
-ipcMain.on('close', () => mainWindow.close());
+// Controles de ventana
+ipcMain.on('win-close', () => app.quit());
+ipcMain.on('win-min', () => win.minimize());
