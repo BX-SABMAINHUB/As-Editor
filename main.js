@@ -1,28 +1,49 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 let mainWindow;
 let splash;
 
 app.on('ready', () => {
-  // 1. Crear la pantalla de carga (Splash Screen)
-  splash = new BrowserWindow({
-    width: 500, height: 300, 
-    transparent: true, frame: false, alwaysOnTop: true 
-  });
+  // Pantalla de carga (Splash)
+  splash = new BrowserWindow({ width: 500, height: 350, transparent: true, frame: false, alwaysOnTop: true });
   splash.loadFile('splash.html');
 
-  // 2. Crear la ventana principal (pero mantenerla oculta)
+  // Ventana Principal
   mainWindow = new BrowserWindow({
-    width: 1000, height: 700,
+    width: 1100, height: 800,
     show: false,
-    webPreferences: { preload: path.join(__dirname, 'preload.js') }
+    backgroundColor: '#121212',
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
   });
   mainWindow.loadFile('index.html');
 
-  // 3. Esperar 5 segundos exactos antes de mostrar el programa
+  // 5 segundos de Splash con Logo
   setTimeout(() => {
     splash.close();
     mainWindow.show();
   }, 5000);
+});
+
+// Lógica de Procesamiento de Video
+ipcMain.on('video-upload', async (event, filePath) => {
+  const output = path.join(path.dirname(filePath), 'AsEditor_Final.mp4');
+  
+  // Aquí simulamos la detección de ritmo y aplicamos 3 flashes de prueba
+  // En una fase avanzada, aquí llamaríamos al script de Python
+  ffmpeg(filePath)
+    .videoFilters([
+      { filter: 'drawbox', options: 'y=0:color=white@0.5:t=fill:enable=\'between(t,1,1.2)\'' },
+      { filter: 'drawbox', options: 'y=0:color=white@0.5:t=fill:enable=\'between(t,2,2.2)\'' }
+    ])
+    .save(output)
+    .on('end', () => event.reply('process-finished', output))
+    .on('error', (err) => console.log('Error: ' + err.message));
 });
