@@ -1,96 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
-    <title>As-Editor AI Studio</title>
+    <title>As-Editor Pro</title>
 </head>
 <body>
-    <div class="vs-container">
-        <div class="vs-menu-bar">
-            <span class="menu-item">Archivo</span>
-            <span class="menu-item">Editar</span>
-            <span class="menu-item">Vista</span>
-            <span class="menu-item">IA-Herramientas</span>
-            <span class="menu-item">Ayuda</span>
-        </div>
 
-        <div class="vs-activity-bar">
-            <div class="activity-icon">📁</div>
-            <div class="activity-icon">🔍</div>
-            <div class="activity-icon">⚙️</div>
-            <div class="activity-icon">🤖</div>
-        </div>
-
-        <div class="vs-side-pane">
-            <div class="pane-header">Explorador de Archivos <span>...</span></div>
-            <div style="padding: 10px; font-size: 12px; color: #888;">
-                > Proyecto_Video_01<br>
-                &nbsp;&nbsp;&nbsp;> Media<br>
-                &nbsp;&nbsp;&nbsp;> Efectos_IA
-            </div>
-        </div>
-
-        <div class="vs-editor-area">
-            <div id="dropZone" class="drop-zone-container">
-                <div class="icon-big">📽️</div>
-                <h2 style="color:white; margin:0;">Arrastra tu video profesional aquí</h2>
-                <p style="color:#666;">Formatos compatibles: MP4, MKV, MOV, AVI</p>
-                <button class="btn-vs" id="selectBtn" style="margin-top:20px;">EXAMINAR ARCHIVOS</button>
-            </div>
-        </div>
-
-        <div class="vs-prop-pane">
-            <div class="pane-header">Propiedades de IA</div>
-            <div style="padding:15px;">
-                <label style="font-size:11px;">Intensidad Flash:</label>
-                <input type="range" style="width:100%;">
-                <br><br>
-                <label style="font-size:11px;">Sensibilidad Ritmo:</label>
-                <input type="range" style="width:100%;">
-                <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
-                <button class="btn-vs" id="magicBtn" style="width:100%;">EJECUTAR RENDERIZADO</button>
-            </div>
-        </div>
-
-        <div class="vs-status-bar">
-            <span>Listo</span>
-            <span style="margin-left:auto;">UTF-8 | IA-Engine: v2.0.6 | Master</span>
+    <div class="title-bar">
+        <div class="app-icon">AS-EDITOR PRO</div>
+        <div class="window-controls">
+            <button onclick="ipcRenderer.send('win-minimize')">_</button>
+            <button onclick="ipcRenderer.send('win-maximize')">▢</button>
+            <button class="close" onclick="ipcRenderer.send('win-close')">✕</button>
         </div>
     </div>
 
-    <script>
-        const { ipcRenderer } = require('electron');
-        const dropZone = document.getElementById('dropZone');
-        let selectedFile = null;
+    <div class="main-container">
+        <div class="activity-bar">
+            <div class="act-icon active">📁</div>
+            <div class="act-icon">✂️</div>
+            <div class="act-icon">🎨</div>
+            <div class="act-icon">🔊</div>
+            <div class="act-icon">⚙️</div>
+        </div>
 
-        // Lógica de Arrastrar y Soltar (Drag & Drop)
-        document.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span>Explorador de Proyecto</span>
+                <span>...</span>
+            </div>
+            <div class="file-tree" id="fileList">
+                <div>> PROYECTO_MASTER</div>
+                <div style="padding-left:10px; color: #ce9178;">[Esperando Archivos...]</div>
+            </div>
+        </div>
 
-        document.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drag-over');
-        });
+        <div class="editor-area" id="editorArea">
+            <div class="drop-zone" id="dropZone">
+                <h1>ARRASTRA TU VIDEO RAW AQUÍ</h1>
+                <p>Soporte Nativo: MP4, MKV, MOV, AVI (4K Ready)</p>
+            </div>
+            <video id="videoPreview" controls style="display:none;"></video>
+        </div>
 
-        document.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if(file && file.path) {
-                selectedFile = file.path;
-                alert("Video detectado: " + file.name);
-            }
-        });
+        <div class="properties-panel">
+            <div class="sidebar-header">PROPIEDADES & FILTROS</div>
+            
+            <div class="control-group">
+                <span class="control-label">CORRECCIÓN DE COLOR (LUT)</span>
+                
+                <span class="control-label">Contraste</span>
+                <input type="range" id="contrast" min="0" max="2" step="0.1" value="1">
+                
+                <span class="control-label">Brillo</span>
+                <input type="range" id="brightness" min="-1" max="1" step="0.1" value="0">
+                
+                <span class="control-label">Saturación</span>
+                <input type="range" id="saturation" min="0" max="3" step="0.1" value="1">
+                
+                <label style="font-size:11px; display:block; margin-top:5px;">
+                    <input type="checkbox" id="grayscale"> Blanco y Negro
+                </label>
+                <label style="font-size:11px; display:block;">
+                    <input type="checkbox" id="invert"> Invertir Colores
+                </label>
+            </div>
 
-        document.getElementById('magicBtn').onclick = () => {
-            if(!selectedFile) return alert("Carga un video primero");
-            ipcRenderer.send('process-video', selectedFile);
-        };
+            <div class="control-group">
+                <span class="control-label">FX / RUIDO DIGITAL</span>
+                <span class="control-label">Intensidad de Grano</span>
+                <input type="range" id="noise" min="0" max="100" value="0">
+            </div>
 
-        ipcRenderer.on('finished', (event, path) => {
-            alert("Renderizado Completo en: " + path);
-        });
-    </script>
+            <div class="control-group">
+                <span class="control-label">CONFIGURACIÓN DE SALIDA</span>
+                <span class="control-label">Formato</span>
+                <select id="format">
+                    <option value="mp4">MP4 (H.264)</option>
+                    <option value="mov">MOV (ProRes Proxy)</option>
+                    <option value="avi">AVI (Uncompressed)</option>
+                    <option value="gif">GIF Animado</option>
+                </select>
+            </div>
+
+            <button class="btn-pro" id="renderBtn">RENDERIZAR PROYECTO</button>
+            
+            <div style="margin-top:20px;">
+                <span class="control-label">Estado del Render</span>
+                <div style="width:100%; height:5px; background:#333; margin-top:5px;">
+                    <div id="progressBar" style="width:0%; height:100%; background:var(--success); transition:0.2s;"></div>
+                </div>
+                <span id="progressText" style="font-size:10px; float:right;">0%</span>
+            </div>
+        </div>
+
+        <div class="terminal-area">
+            <div class="terminal-tabs">
+                <div class="tab active">SALIDA</div>
+                <div class="tab">DEBUG CONSOLE</div>
+                <div class="tab">TERMINAL</div>
+            </div>
+            <div class="terminal-output" id="consoleOutput">
+                <div class="log-system">AS-EDITOR PRO [Versión 2.0.0]</div>
+                <div class="log-system">Motor FFmpeg inicializado... LISTO.</div>
+                <div class="log-system">Esperando entrada de usuario...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span id="statusFile">Ningún archivo abierto</span>
+        <span>
+            MEM: 4096MB | GPU: ACTIVE | Render Engine: FFMPEG-STATIC
+        </span>
+    </div>
+
+    <script src="renderer.js"></script>
 </body>
 </html>
