@@ -9,9 +9,9 @@
     <div class="vs-header">
         <div class="vs-menu">
             <span class="vs-brand">AS-EDITOR PRO</span>
-            <span>Archivo</span><span>Editar</span><span>Selección</span><span>Ver</span><span>Ir</span><span>Terminal</span><span>Ayuda</span>
+            <span>Archivo</span><span>Editar</span><span>Visualización</span><span>IA</span>
         </div>
-        <div class="vs-window-title">proyecto_master_render.mp4 - As-Editor Pro</div>
+        <div class="vs-window-title">As-Editor Pro - Studio Environment</div>
         <div class="vs-controls">
             <button onclick="ipcRenderer.send('min')">－</button>
             <button onclick="ipcRenderer.send('max')">⬜</button>
@@ -21,63 +21,44 @@
 
     <div class="vs-body">
         <div class="vs-activity-bar">
-            <div class="vs-icon active">📄</div>
-            <div class="vs-icon">🔍</div>
-            <div class="vs-icon">🍴</div>
-            <div class="vs-icon">📦</div>
+            <div class="vs-icon active">📁</div>
             <div class="vs-icon">⚙️</div>
         </div>
 
         <div class="vs-sidebar">
-            <div class="vs-section-header">EXPLORADOR: PROYECTO</div>
+            <div class="vs-section-header">EXPLORADOR</div>
             <div class="vs-tree">
-                <div class="vs-item folder">▼ AS_PROJECT</div>
-                <div class="vs-item file" id="activeFile">Esperando video...</div>
-                <div class="vs-item folder">▶ assets</div>
-                <div class="vs-item folder">▶ cache</div>
+                <div class="vs-item folder">▼ PROYECTO_ACTUAL</div>
+                <div class="vs-item file" id="activeFile">Sin video...</div>
             </div>
         </div>
 
         <div class="vs-editor-area">
-            <div class="vs-tabs">
-                <div class="vs-tab active">Video_Preview.mp4</div>
-            </div>
-            
+            <div class="vs-tabs"><div class="vs-tab active">Preview_Realtime.mp4</div></div>
             <div class="vs-video-container" id="dropZone">
                 <video id="videoPreview" controls></video>
                 <div id="dropText" class="vs-placeholder">
-                    <p>ARRASTRA EL ARCHIVO DE VIDEO AQUÍ</p>
-                    <span>Soporta RAW, Log-C, ProRes y H.265</span>
+                    <p>ARRASTRA TU VIDEO AQUÍ PARA EMPEZAR</p>
                 </div>
             </div>
 
             <div class="vs-bottom-panel">
                 <div class="vs-panel-tabs">
-                    <div class="vs-panel-tab active">PROBLEMAS</div>
-                    <div class="vs-panel-tab active">SALIDA</div>
-                    <div class="vs-panel-tab">CONSOLA DE DEPURACIÓN</div>
-                    <div class="vs-panel-tab">TERMINAL</div>
+                    <div class="vs-panel-tab active">SALIDA DE CONSOLA</div>
                 </div>
-                <div class="vs-output" id="consoleOutput">
-                    <div class="log-system">Motor As-Editor 2026 inicializado...</div>
-                    <div class="log-system">FFmpeg core detectado en v6.0-static.</div>
-                </div>
+                <div class="vs-output" id="consoleOutput"></div>
             </div>
         </div>
 
         <div class="vs-properties">
-            <div class="vs-section-header">PROPIEDADES & FILTROS IA</div>
-            <div class="vs-scroll-options" id="optionsContainer">
-                </div>
+            <div class="vs-section-header">CONTROLES DE VIDEO & IA</div>
+            <div class="vs-scroll-options" id="optionsContainer"></div>
             <div class="vs-render-zone">
-                <div class="vs-progress-container">
-                    <div id="progressBar" class="vs-progress-fill"></div>
-                </div>
+                <div class="vs-progress-container"><div id="progressBar" class="vs-progress-fill"></div></div>
                 <button id="renderBtn" class="vs-btn-main">COMPILAR Y EXPORTAR (EXE)</button>
             </div>
         </div>
     </div>
-
     <script src="renderer.js"></script>
 </body>
 </html>
