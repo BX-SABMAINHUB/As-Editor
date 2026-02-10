@@ -1,7 +1,7 @@
 {
   "name": "as-editor-pro",
   "version": "2.0.0",
-  "description": "Professional AI Non-Linear Video Editor",
+  "description": "Professional AI Video Workstation",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -19,8 +19,8 @@
   },
   "dependencies": {
     "electron-is-dev": "^2.0.0",
-    "ffmpeg-static": "^5.2.0",
-    "ffprobe-static": "^5.2.0",
+    "ffmpeg-static": "latest",
+    "ffprobe-static": "latest",
     "fluent-ffmpeg": "^2.1.2"
   },
   "devDependencies": {
