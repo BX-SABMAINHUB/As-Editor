@@ -1,11 +1,12 @@
 {
   "name": "as-editor",
-  "version": "1.1.0",
-  "description": "AS-Editor PRO: Advanced Video Editing Tool",
+  "version": "1.2.0",
+  "description": "AS-Editor PRO: Advanced Video Editing Tool with Enhanced UI and Animations",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "package": "electron-builder --win --x64"
   },
   "author": "DevAlex",
   "license": "MIT",
@@ -19,17 +20,279 @@
     "@ffprobe-installer/ffprobe": "^2.1.2"
   },
   "build": {
-    "appId": "com.dev alex.as-editor",
+    "appId": "com.devalex.as-editor",
     "productName": "AS-Editor PRO",
     "directories": {
       "output": "dist"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "assets/icon.ico"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/as-editor.git"
+  },
+  "keywords": [
+    "video-editor",
+    "electron",
+    "ffmpeg",
+    "visual-studio-style"
+  ],
+  "homepage": "https://github.com/yourusername/as-editor#readme",
+  "bugs": {
+    "url": "https://github.com/yourusername/as-editor/issues"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "private": true,
+  "config": {
+    "forge": {
+      "packagerConfig": {}
+    }
+  },
+  "browser": {
+    "fs": false,
+    "path": false
+  },
+  "mainFields": [
+    "main",
+    "module",
+    "browser"
+  ],
+  "contributors": [
+    "DevAlex <devalex@example.com>"
+  ],
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/yourusername"
+    }
+  ],
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "jest": {
+    "roots": [
+      "<rootDir>/src"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.d.ts"
+    ],
+    "setupFiles": [
+      "react-app-polyfill/jsdom"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/setupTests.js"
+    ],
+    "testMatch": [
+      "<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}",
+      "<rootDir>/src/**/*.{spec,test}.{js,jsx,ts,tsx}"
+    ],
+    "testEnvironment": "jsdom",
+    "testRunner": "jest-circus/runner",
+    "transform": {
+      "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "<rootDir>/node_modules/babel-jest",
+      "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
+      "^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
+    },
+    "transformIgnorePatterns": [
+      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$",
+      "^.+\\.module\\.(css|sass|scss)$"
+    ],
+    "modulePaths": [],
+    "moduleNameMapper": {
+      "^react-native$": "react-native-web",
+      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy"
+    },
+    "moduleFileExtensions": [
+      "web.js",
+      "js",
+      "web.ts",
+      "ts",
+      "web.tsx",
+      "tsx",
+      "json",
+      "web.jsx",
+      "jsx",
+      "node"
+    ],
+    "watchPlugins": [
+      "jest-watch-typeahead/filename",
+      "jest-watch-typeahead/testname"
+    ],
+    "resetMocks": true
+  },
+  "babel": {
+    "presets": [
+      "react-app"
+    ]
+  },
+  "resolutions": {
+    "@babel/preset-env": "7.13.8"
+  },
+  "peerDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devEngines": {
+    "node": ">=14.x",
+    "npm": ">=6.x",
+    "yarn": ">=1.x"
+  },
+  "volta": {
+    "node": "14.17.0",
+    "yarn": "1.22.10"
+  },
+  "proxy": "http://localhost:5000",
+  "homepage": ".",
+  "directories": {
+    "app": "src"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false,
+  "types": "dist/index.d.ts",
+  "module": "dist/index.modern.js",
+  "main": "dist/index.cjs.js",
+  "source": "src/index.js",
+  "umd:main": "dist/index.umd.js",
+  "unpkg": "dist/index.umd.js",
+  "jsnext:main": "dist/index.esm.js",
+  "esmodule": "dist/index.esm.js",
+  "typings": "dist/index.d.ts",
+  "gitHead": "main",
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "eslint --cache --fix",
+    "*.{js,jsx,ts,tsx,css,md}": "prettier --write"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ]
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/dist"
+        ]
+      }
+    }
+  },
+  "cpu": [
+    "x64"
+  ],
+  "os": [
+    "win32"
+  ],
+  "libc": [
+    "unknown"
+  ],
+  "arch": "x64",
+  "platform": "win32",
+  "optionalDependencies": {},
+  "bundledDependencies": false,
+  "bundleDependencies": false,
+  "flat": false,
+  "lockfileVersion": 1,
+  "dependenciesMeta": {},
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/webpack"
+  },
+  "hasInstallScript": true,
+  "installConfig": {
+    "pnp": true
+  },
+  "preferUnplugged": false,
+  "deprecated": false,
+  "preferOnline": false,
+  "offline": false,
+  "saveExact": false,
+  "savePrefix": "^",
+  "saveWorkspaceProtocol": false,
+  "strictPeerDependencies": false,
+  "strictSsl": true,
+  "updateNotifier": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "yarnPath": ".yarn/releases/yarn-berry.cjs",
+  "yarnVersion": "3.2.0",
+  "packageManager": "yarn@3.2.0",
+  "npmConfigUserAgent": "yarn/3.2.0 npm/? node/v16.15.0 win32 x64",
+  "npmRegistryServer": "https://registry.yarnpkg.com",
+  "npmRegistryToken": "",
+  "lastUpdateCheck": 1649234567890,
+  "plugins": [
+    {
+      "path": ".yarn/plugins/@yarnpkg/plugin-interactive-tools.cjs",
+      "spec": "@yarnpkg/plugin-interactive-tools"
+    }
+  ],
+  "packageExtensions": {
+    "react-scripts@*": {
+      "peerDependencies": {
+        "typescript": "*"
+      },
+      "peerDependenciesMeta": {
+        "typescript": {
+          "optional": true
+        }
+      }
+    }
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
+  "resolutions": {
+    "babel-loader": "8.1.0"
+  },
+  "checksum": "somechecksum",
+  "languageName": "node",
+  "linkType": "hard"
 }
