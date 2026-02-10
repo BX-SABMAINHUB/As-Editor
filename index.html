@@ -3,11 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AS-Editor PRO v1.0</title>
+  <title>AS-Editor PRO v1.2</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="menu-bar" class="menu-bar">
+    <!-- Custom menu if Electron menu not sufficient -->
+  </div>
+  <div id="toolbar" class="toolbar">
+    <button onclick="ipcRenderer.send('open-video-dialog')">Open</button>
+    <button onclick="ipcRenderer.send('save-project', {})">Save</button>
+    <button>Undo</button>
+    <button>Redo</button>
+    <button>Preview</button>
+    <button>Export</button>
+    <button>Settings</button>
+    <button>Help</button>
+    <!-- More buttons like VS: Build, Debug, etc. stubs -->
+    <button>Build Project</button>
+    <button>Debug Video</button>
+    <button>Analyze Effects</button>
+    <button>Import Assets</button>
+    <button>Export Config</button>
+    <button>Theme Switch</button>
+    <button>Full Screen</button>
+    <button>Minimize</button>
+    <button>Maximize</button>
+    <button>Close</button>
+  </div>
   <div class="container">
+    <div class="left-sidebar">
+      <h2>Project Explorer</h2>
+      <ul>
+        <li>Video Assets</li>
+        <li>Effects Library</li>
+        <li>Timeline Layers</li>
+        <!-- More like VS -->
+        <li>Solution Items</li>
+        <li>References</li>
+        <li>Properties</li>
+        <li>Output</li>
+        <li>Error List</li>
+        <li>Task List</li>
+        <li>Bookmarks</li>
+        <li>Find Results</li>
+        <li>Command Window</li>
+        <li>Immediate Window</li>
+        <li>Breakpoints</li>
+        <li>Modules</li>
+        <li>Threads</li>
+        <li>Call Stack</li>
+        <li>Watch</li>
+        <li>Autos</li>
+        <li>Locals</li>
+      </ul>
+    </div>
     <div class="sidebar">
       <h2>Efectos y Configuraciones</h2>
       <input type="text" id="search-effects" placeholder="Buscar efectos...">
@@ -17,12 +67,20 @@
       <div id="drop-area">
         <p>Arrastra y suelta un vídeo aquí</p>
       </div>
-      <video id="preview-video" controls style="display: none; width: 100%;"></video>
+      <video id="preview-video" controls style="display: none; width: 100%; height: auto;"></video>
+      <div id="timeline" class="timeline"></div>
       <p id="status-text">Estado: Listo</p>
       <div class="progress-bar-container">
         <div id="progress-bar"></div>
       </div>
     </div>
+    <div id="properties-panel" class="right-sidebar">
+      <h2>Properties</h2>
+      <!-- Dynamic properties -->
+    </div>
+  </div>
+  <div id="console-output" class="console" style="display: none;">
+    <!-- Console logs -->
   </div>
   <button id="continue-btn">Continuar</button>
   <script src="renderer.js"></script>
