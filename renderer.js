@@ -1,103 +1,176 @@
-/* * AS-EDITOR PRO - UI GENERATOR & EVENT DISPATCHER
- * Generación de alta densidad para +500 opciones profesionales.
+/**
+ * AS-EDITOR PRO - UI ENGINE
+ * Gestión de Explorador Profesional y Multi-Threading de UI
  */
 
 const { ipcRenderer } = require('electron');
+const path = require('path');
 
-// --- DICCIONARIO MAESTRO DE HERRAMIENTAS (EXPANDIDO) ---
-const TOOLSET = [
-    {
-        group: "COLORIMETRÍA LOG & HDR",
-        items: [
-            { id: 'gamma_r', name: 'Curva Gamma (R)', type: 'range', min: 0.1, max: 5, step: 0.01, def: 1 },
-            { id: 'gamma_g', name: 'Curva Gamma (G)', type: 'range', min: 0.1, max: 5, step: 0.01, def: 1 },
-            { id: 'gamma_b', name: 'Curva Gamma (B)', type: 'range', min: 0.1, max: 5, step: 0.01, def: 1 },
-            { id: 'contrast', name: 'Contraste Dinámico', type: 'range', min: -1, max: 2, step: 0.01, def: 1 },
-            { id: 'brightness', name: 'Nivel de Negro (Luma)', type: 'range', min: -1, max: 1, step: 0.01, def: 0 },
-            { id: 'saturation', name: 'Saturación de Color', type: 'range', min: 0, max: 3, step: 0.01, def: 1 },
-            { id: 'vibrance', name: 'Intensidad Vibrante', type: 'range', min: -1, max: 2, step: 0.01, def: 0 }
-        ]
-    },
-    {
-        group: "ÓPTICA Y ENFOQUE",
-        items: [
-            { id: 'unsharp', name: 'Nitidez Digital (Sharpen)', type: 'range', min: 0, max: 5, step: 0.1, def: 0 },
-            { id: 'boxblur', name: 'Desenfoque de Lente', type: 'range', min: 0, max: 20, step: 1, def: 0 },
-            { id: 'vignette', name: 'Viñeteado Mecánico', type: 'range', min: 0, max: 1, step: 0.01, def: 0 },
-            { id: 'lens_k1', name: 'Distorsión Radial K1', type: 'range', min: -0.5, max: 0.5, step: 0.01, def: 0 },
-            { id: 'lens_k2', name: 'Distorsión Radial K2', type: 'range', min: -0.5, max: 0.5, step: 0.01, def: 0 }
-        ]
-    },
-    {
-        group: "EFECTOS ESPECIALES (FX)",
-        items: [
-            { id: 'grayscale', name: 'Filtro Monocromático', type: 'checkbox', def: false },
-            { id: 'invert', name: 'Inversión Química', type: 'checkbox', def: false },
-            { id: 'sepia', name: 'Tono Nostalgia Sepia', type: 'checkbox', def: false },
-            { id: 'noise_grain', name: 'Grano de Película ISO', type: 'range', min: 0, max: 100, step: 1, def: 0 },
-            { id: 'denoise', name: 'Reducción de Ruido IA', type: 'checkbox', def: false }
-        ]
-    },
-    {
-        group: "AUDIO ENGINEERING",
-        items: [
-            { id: 'volume', name: 'Ganancia de Entrada', type: 'range', min: 0, max: 5, step: 0.1, def: 1 },
-            { id: 'bass', name: 'Compresión de Bajos', type: 'range', min: -15, max: 15, step: 1, def: 0 },
-            { id: 'treble', name: 'Realce de Brillo', type: 'range', min: -15, max: 15, step: 1, def: 0 },
-            { id: 'normalize', name: 'Masterización EBU R128', type: 'checkbox', def: false }
-        ]
-    },
-    {
-        group: "GEOMETRÍA DE TRANSFORMACIÓN",
-        items: [
-            { id: 'rotate', name: 'Ángulo de Rotación', type: 'range', min: 0, max: 360, step: 1, def: 0 },
-            { id: 'zoom', name: 'Escalado Dinámico', type: 'range', min: 1, max: 3, step: 0.01, def: 1 },
-            { id: 'hflip', name: 'Espejo Horizontal', type: 'checkbox', def: false },
-            { id: 'vflip', name: 'Espejo Vertical', type: 'checkbox', def: false }
-        ]
-    }
-    // NOTA: Para llegar a las 2000 líneas, el código incluye funciones automáticas 
-    // que mapean estos arrays a objetos de procesamiento complejos.
+// --- SISTEMA DE ESTADO GLOBAL ---
+let appState = {
+    projects: [], // { id, name, path, settings }
+    activeId: null,
+    folders: ["PROYECTOS_MASTER", "RECURSOS_IA", "EXPORTACIONES"],
+    uiConfig: { sidebarWidth: 260, bottomHeight: 250 }
+};
+
+// --- CONFIGURACIÓN DE HERRAMIENTAS (DERECHA) ---
+const TOOLS = [
+    { group: "COLOR MASTER", items: [
+        { id: 'gamma_r', name: 'Gamma R', type: 'range', min: 0.1, max: 5, step: 0.01, def: 1 },
+        { id: 'gamma_g', name: 'Gamma G', type: 'range', min: 0.1, max: 5, step: 0.01, def: 1 },
+        { id: 'gamma_b', name: 'Gamma B', type: 'range', min: 0.1, max: 5, step: 0.01, def: 1 },
+        { id: 'contrast', name: 'Contraste', type: 'range', min: -1, max: 2, step: 0.01, def: 1 },
+        { id: 'brightness', name: 'Brillo', type: 'range', min: -1, max: 1, step: 0.01, def: 0 },
+        { id: 'saturation', name: 'Saturación', type: 'range', min: 0, max: 3, step: 0.01, def: 1 }
+    ]},
+    { group: "IA & FX", items: [
+        { id: 'unsharp', name: 'Nitidez IA', type: 'range', min: 0, max: 5, step: 0.1, def: 0 },
+        { id: 'vignette', name: 'Viñeta', type: 'range', min: 0, max: 1, step: 0.01, def: 0 },
+        { id: 'grayscale', name: 'B/N Noir', type: 'checkbox', def: false },
+        { id: 'invert', name: 'Invertir', type: 'checkbox', def: false },
+        { id: 'sepia', name: 'Vintage Sepia', type: 'checkbox', def: false }
+    ]},
+    { group: "AUDIO & GEOMETRÍA", items: [
+        { id: 'volume', name: 'Volumen', type: 'range', min: 0, max: 5, step: 0.1, def: 1 },
+        { id: 'bass', name: 'Bajos', type: 'range', min: -15, max: 15, step: 1, def: 0 },
+        { id: 'treble', name: 'Agudos', type: 'range', min: -15, max: 15, step: 1, def: 0 },
+        { id: 'rotate', name: 'Rotar Grados', type: 'range', min: 0, max: 360, step: 1, def: 0 },
+        { id: 'hflip', name: 'Espejo H', type: 'checkbox', def: false },
+        { id: 'vflip', name: 'Espejo V', type: 'checkbox', def: false }
+    ]}
 ];
 
-let selectedPath = null;
+// --- GESTOR DEL EXPLORADOR (IZQUIERDA) ---
+function renderExplorer() {
+    const container = document.getElementById('explorerTree');
+    container.innerHTML = '';
 
-function initProUI() {
-    const container = document.getElementById('optionsContainer');
-    TOOLSET.forEach(section => {
-        const groupDiv = document.createElement('div');
-        groupDiv.className = 'vs-group';
-        groupDiv.innerHTML = `<div class="vs-group-title">▼ ${section.group}</div>`;
+    appState.folders.forEach(folder => {
+        const fDiv = document.createElement('div');
+        fDiv.className = 'tree-folder';
+        fDiv.innerHTML = `<span>▼</span> ${folder}`;
+        container.appendChild(fDiv);
+
+        // Renderizar videos dentro de la carpeta (si pertenecen a ella)
+        const files = appState.projects.filter(p => p.folder === folder);
+        files.forEach(file => {
+            const fItem = document.createElement('div');
+            fItem.className = `tree-item ${appState.activeId === file.id ? 'active' : ''}`;
+            fItem.innerHTML = `📄 ${file.name}`;
+            fItem.onclick = () => selectVideo(file.id);
+            container.appendChild(fItem);
+        });
+    });
+}
+
+function selectVideo(id) {
+    appState.activeId = id;
+    const project = appState.projects.find(p => p.id === id);
+    
+    // Actualizar Preview
+    const video = document.getElementById('videoPreview');
+    video.src = `file://${project.path}`;
+    video.style.display = 'block';
+    document.getElementById('dropText').style.display = 'none';
+
+    // Cargar sus ajustes en los sliders
+    Object.keys(project.settings).forEach(key => {
+        const el = document.getElementById(key);
+        if (el) {
+            if (el.type === 'checkbox') el.checked = project.settings[key];
+            else {
+                el.value = project.settings[key];
+                if(document.getElementById(`val_${key}`)) document.getElementById(`val_${key}`).innerText = el.value;
+            }
+        }
+    });
+
+    log('info', `Cargado proyecto: ${project.name}`);
+    renderExplorer();
+    updateTabs();
+}
+
+function updateTabs() {
+    const container = document.getElementById('tabContainer');
+    container.innerHTML = '';
+    appState.projects.forEach(p => {
+        const tab = document.createElement('div');
+        tab.className = `vs-tab ${appState.activeId === p.id ? 'active' : ''}`;
+        tab.innerHTML = `${p.name} <span onclick="closeProject('${p.id}')">×</span>`;
+        tab.onclick = (e) => { if(e.target.tagName !== 'SPAN') selectVideo(p.id); };
+        container.appendChild(tab);
+    });
+}
+
+// --- DRAG & DROP MULTI-VIDEO ---
+const dropZone = document.getElementById('dropZone');
+dropZone.ondrop = (e) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    
+    files.forEach(file => {
+        const newProject = {
+            id: Date.now() + Math.random(),
+            name: file.name,
+            path: file.path,
+            folder: "PROYECTOS_MASTER",
+            settings: {} // Valores por defecto
+        };
+        // Inicializar settings
+        TOOLS.forEach(g => g.items.forEach(i => newProject.settings[i.id] = i.def));
         
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'vs-group-content';
+        appState.projects.push(newProject);
+        if (!appState.activeId) selectVideo(newProject.id);
+    });
+    
+    renderExplorer();
+    updateTabs();
+    log('success', `Añadidos ${files.length} archivos al gestor.`);
+};
 
-        section.items.forEach(item => {
+// --- BOTÓN EXPORTAR ---
+document.getElementById('renderBtn').onclick = () => {
+    if (!appState.activeId) return log('error', 'Selecciona un video en el explorador.');
+
+    const activeProject = appState.projects.find(p => p.id === appState.activeId);
+    
+    // Capturar ajustes actuales antes de enviar
+    const currentSettings = {};
+    TOOLS.forEach(g => g.items.forEach(i => {
+        const el = document.getElementById(i.id);
+        currentSettings[i.id] = (i.type === 'range') ? parseFloat(el.value) : el.checked;
+    }));
+
+    ipcRenderer.send('start-render', { 
+        input: activeProject.path, 
+        options: currentSettings 
+    });
+};
+
+// Inyectar herramientas de la derecha
+function initTools() {
+    const container = document.getElementById('optionsContainer');
+    TOOLS.forEach(group => {
+        const gDiv = document.createElement('div');
+        gDiv.className = 'vs-group';
+        gDiv.innerHTML = `<div class="vs-group-title">▼ ${group.group}</div>`;
+        const cDiv = document.createElement('div');
+        cDiv.className = 'vs-group-content';
+        
+        group.items.forEach(item => {
             const row = document.createElement('div');
             row.className = 'vs-row';
+            let input = item.type === 'range' ? 
+                `<input type="range" id="${item.id}" min="${item.min}" max="${item.max}" step="${item.step}" value="${item.def}">
+                 <span class="vs-val" id="val_${item.id}">${item.def}</span>` :
+                `<input type="checkbox" id="${item.id}" ${item.def ? 'checked' : ''}>`;
             
-            let inputHTML = '';
-            if(item.type === 'range') {
-                inputHTML = `<input type="range" id="${item.id}" min="${item.min}" max="${item.max}" step="${item.step}" value="${item.def}">
-                             <span class="vs-val" id="val_${item.id}">${item.def}</span>`;
-            } else {
-                inputHTML = `<input type="checkbox" id="${item.id}" ${item.def ? 'checked' : ''}>`;
-            }
-
-            row.innerHTML = `<label title="${item.name}">${item.name}</label>${inputHTML}`;
-            contentDiv.appendChild(row);
-
-            setTimeout(() => {
-                const el = document.getElementById(item.id);
-                el.oninput = () => {
-                    if(item.type === 'range') document.getElementById(`val_${item.id}`).innerText = el.value;
-                    log('debug', `Actualizado: ${item.id} -> ${el.value}`);
-                };
-            }, 0);
+            row.innerHTML = `<label>${item.name}</label>${input}`;
+            cDiv.appendChild(row);
         });
-
-        groupDiv.appendChild(contentDiv);
-        container.appendChild(groupDiv);
+        gDiv.appendChild(cDiv);
+        container.appendChild(gDiv);
     });
 }
 
@@ -110,45 +183,7 @@ function log(type, msg) {
     out.scrollTop = out.scrollHeight;
 }
 
-// DRAG & DROP REAL
-const dropZone = document.getElementById('dropZone');
-dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = "#007acc"; };
-dropZone.ondragleave = () => { dropZone.style.borderColor = "#3c3c3c"; };
-dropZone.ondrop = (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) {
-        selectedPath = file.path;
-        document.getElementById('videoPreview').src = `file://${file.path}`;
-        document.getElementById('videoPreview').style.display = 'block';
-        document.getElementById('dropText').style.display = 'none';
-        document.getElementById('activeFile').innerText = file.name;
-        log('success', `VIDEO CARGADO: ${file.name}`);
-    }
-};
-
-// BOTÓN COMPILAR Y EXPORTAR
-document.getElementById('renderBtn').onclick = () => {
-    if(!selectedPath) {
-        log('error', 'ERROR: No has arrastrado ningún video al editor central.');
-        return;
-    }
-    
-    log('system', 'Iniciando pipeline de renderizado industrial...');
-    const params = {};
-    TOOLSET.forEach(s => s.items.forEach(i => {
-        const el = document.getElementById(i.id);
-        params[i.id] = (i.type === 'range') ? parseFloat(el.value) : el.checked;
-    }));
-
-    // AQUÍ ESTÁ LA CORRECCIÓN: Enviamos 'input' para que coincida con main.js
-    ipcRenderer.send('start-render', { input: selectedPath, options: params });
-};
-
-ipcRenderer.on('render-progress', (e, p) => {
-    document.getElementById('progressBar').style.width = `${p}%`;
-});
-
-ipcRenderer.on('log', (e, d) => log(d.type, d.msg));
-
-initProUI();
+// Init
+initTools();
+renderExplorer();
+log('system', 'Workstation 2026 cargada. El Explorador está listo para gestionar carpetas.');
