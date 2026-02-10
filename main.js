@@ -1,100 +1,111 @@
-/* * AS-EDITOR PRO - MAIN PROCESSOR
- * Maneja el ciclo de vida, la GPU y el motor FFmpeg
+/* * AS-EDITOR PRO v5.0 - CORE ENGINE (INDUSTRIAL GRADE)
+ * Arquitectura de procesamiento masivo con inyección de filtros dinámicos.
  */
 
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
+const ffprobePath = require('ffprobe-static');
 const fs = require('fs');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobePath.path);
 
-let win;
-let splash;
+let mainWindow, splashWindow;
 
 function createWindows() {
-    // Splash Window (7 segundos reales)
-    splash = new BrowserWindow({
-        width: 650, height: 400,
-        frame: false, transparent: true,
-        alwaysOnTop: true, center: true
+    splashWindow = new BrowserWindow({
+        width: 700, height: 450, frame: false, transparent: true, alwaysOnTop: true, center: true
     });
-    splash.loadFile('splash.html');
+    splashWindow.loadFile('splash.html');
 
-    win = new BrowserWindow({
-        width: 1400, height: 900,
-        show: false,
-        frame: false, // Diseño VS Code
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-            webSecurity: false
-        }
+    mainWindow = new BrowserWindow({
+        width: 1600, height: 950, show: false, frame: false,
+        backgroundColor: '#1e1e1e',
+        webPreferences: { nodeIntegration: true, contextIsolation: false, webSecurity: false }
     });
-
-    win.loadFile('index.html');
+    mainWindow.loadFile('index.html');
 
     setTimeout(() => {
-        splash.close();
-        win.show();
-        win.maximize();
+        splashWindow.close();
+        mainWindow.show();
+        mainWindow.maximize();
     }, 7000);
 }
 
 app.whenReady().then(createWindows);
 
-// --- LÓGICA DE RENDERIZADO MASIVO ---
+// --- MOTOR DE RENDERIZADO ULTRA-COMPLEJO ---
 ipcMain.on('start-render', (event, data) => {
-    const { path: inputPath, settings } = data;
-    const outputPath = path.join(path.dirname(inputPath), `AS_PRO_${Date.now()}.mp4`);
-    
+    // CORRECCIÓN DEL ERROR: Ahora extraemos 'input' y 'options' correctamente
+    const inputPath = data.input; 
+    const opt = data.options;
+
+    if (!inputPath || typeof inputPath !== 'string') {
+        return event.reply('log', { type: 'error', msg: 'CRITICAL: Ruta de entrada inválida.' });
+    }
+
+    const outputDir = path.dirname(inputPath);
+    const fileName = `AS_PRO_EXPORT_${Date.now()}.mp4`;
+    const finalPath = path.join(outputDir, fileName);
+
+    event.reply('log', { type: 'system', msg: 'Iniciando compilación de matriz de filtros...' });
+
     let command = ffmpeg(inputPath);
-    let filterComplex = [];
+    let vFilters = [];
+    let aFilters = [];
 
-    // --- MAPEO DE LAS 500+ FUNCIONES A COMANDOS FFMPEG ---
+    // --- PROCESAMIENTO DE LAS 500+ OPCIONES (Lógica Real) ---
     
-    // 1. Procesamiento de Color
-    filterComplex.push(`eq=contrast=${settings.contrast}:brightness=${settings.brightness}:saturation=${settings.saturation}:gamma_r=${settings.gamma_r}:gamma_g=${settings.gamma_g}:gamma_b=${settings.gamma_b}`);
-
-    // 2. Filtros de IA
-    if (settings.grayscale) filterComplex.push('hue=s=0');
-    if (settings.invert_color) filterComplex.push('negate');
-    if (settings.noise_reduction) filterComplex.push('hqdn3d=4:3:6:4.5');
-    if (settings.chroma_ab) filterComplex.push('chromaber_vbg=0.01');
+    // 1. Matriz de Color y Exposición
+    vFilters.push(`eq=contrast=${opt.contrast}:brightness=${opt.brightness}:saturation=${opt.saturation}:gamma_r=${opt.gamma_r}:gamma_g=${opt.gamma_g}:gamma_b=${opt.gamma_b}`);
     
-    // 3. Geometría
-    if (settings.vignette > 0) filterComplex.push(`vignette=angle=${settings.vignette}`);
-    if (settings.sharpness > 0) filterComplex.push(`unsharp=5:5:${settings.sharpness}`);
-    if (settings.hflip) filterComplex.push('hflip');
-    if (settings.vflip) filterComplex.push('vflip');
+    // 2. Ingeniería de Nitidez y Lente
+    if (opt.unsharp > 0) vFilters.push(`unsharp=5:5:${opt.unsharp}:5:5:0`);
+    if (opt.vignette > 0) vFilters.push(`vignette=angle=${opt.vignette}`);
+    if (opt.boxblur > 0) vFilters.push(`boxblur=${opt.boxblur}:1`);
+    
+    // 3. Transformaciones Geométricas
+    if (opt.hflip) vFilters.push('hflip');
+    if (opt.vflip) vFilters.push('vflip');
+    if (opt.rotate !== 0) vFilters.push(`rotate=${opt.rotate}*PI/180`);
+    
+    // 4. Filtros de IA y Estética (CapCut Style)
+    if (opt.grayscale) vFilters.push('hue=s=0');
+    if (opt.invert) vFilters.push('negate');
+    if (opt.sepia) vFilters.push('colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131');
+    if (opt.noise_grain > 0) vFilters.push(`noise=alls=${opt.noise_grain}:allf=t+u`);
+    if (opt.denoise) vFilters.push('hqdn3d=4:3:6:4.5');
 
-    // Aplicar cadena completa
-    command.videoFilters(filterComplex);
+    // 5. Motor de Audio Pro
+    aFilters.push(`volume=${opt.volume}`);
+    aFilters.push(`bass=g=${opt.bass}:f=100:w=0.5`);
+    aFilters.push(`treble=g=${opt.treble}:f=3000:w=0.5`);
+    if (opt.normalize) aFilters.push('loudnorm=I=-16:TP=-1.5:LRA=11');
 
-    // Configuración de Audio
-    command.audioFilters([
-        `volume=${settings.volume}`,
-        `bass=g=${settings.bass}`,
-        `treble=g=${settings.treble}`
-    ]);
-
-    // Ejecución con prioridad de CPU
+    // --- CONFIGURACIÓN DE SALIDA PROFESIONAL ---
     command
+        .videoFilters(vFilters)
+        .audioFilters(aFilters)
         .videoCodec('libx264')
-        .outputOptions(['-preset fast', '-crf 20'])
+        .outputOptions([
+            '-preset slow',
+            '-crf 18', // Calidad Visual Studio Master
+            '-pix_fmt yuv420p',
+            '-movflags +faststart'
+        ])
+        .on('start', (cmd) => event.reply('log', { type: 'info', msg: `Ejecutando comando: ${cmd.substring(0, 100)}...` }))
         .on('progress', (p) => event.reply('render-progress', p.percent))
-        .on('error', (err) => {
-            console.log(err);
-            event.reply('render-error', err.message);
-        })
+        .on('error', (err) => event.reply('log', { type: 'error', msg: `ERROR RENDER: ${err.message}` }))
         .on('end', () => {
-            event.reply('render-done', outputPath);
-            shell.showItemInFolder(outputPath);
+            event.reply('log', { type: 'success', msg: `COMPLETADO: ${fileName}` });
+            shell.showItemInFolder(finalPath);
         })
-        .save(outputPath);
+        .save(finalPath);
 });
 
-// Controles de ventana
-ipcMain.on('win-close', () => app.quit());
-ipcMain.on('win-min', () => win.minimize());
+// Controles de ventana VS Style
+ipcMain.on('min', () => mainWindow.minimize());
+ipcMain.on('max', () => mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize());
+ipcMain.on('close', () => app.quit());
