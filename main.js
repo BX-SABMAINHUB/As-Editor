@@ -1,6 +1,6 @@
-// Main process for AS-Editor PRO v1.2
-// Enhanced with more features, error handling, logging, and VS-like functionality
-// Handles window creation, splash screen with animation, video processing using FFmpeg
+// Main process for AS-Editor PRO v1.3 - CapCut-like on Desktop
+// Enhanced with timeline support for timed effects
+// Handles window creation, splash screen with animation, video processing using FFmpeg with timed filters
 // Added menu bar, toolbar integration, preview handling, and custom file naming
 // Fixed video saving by using videoFilters and audioFilters separately
 
@@ -65,7 +65,7 @@ function createMainWindow() {
     height: 900,
     minWidth: 1000,
     minHeight: 700,
-    title: "AS-Editor PRO v1.2",
+    title: "AS-Editor PRO v1.3",
     icon: path.join(__dirname, 'assets/icon.ico'),
     webPreferences: {
       nodeIntegration: true,
@@ -81,7 +81,7 @@ function createMainWindow() {
     mainWindow.webContents.openDevTools();
   }
 
-  // Set up menu like Visual Studio
+  // Set up menu like Visual Studio / CapCut
   const menuTemplate = [
     {
       label: 'File',
@@ -89,6 +89,7 @@ function createMainWindow() {
         { label: 'Open Video', accelerator: 'CmdOrCtrl+O', click: () => mainWindow.webContents.send('open-video') },
         { label: 'Save Project', accelerator: 'CmdOrCtrl+S', click: () => mainWindow.webContents.send('save-project') },
         { type: 'separator' },
+        { label: 'Export Video', accelerator: 'CmdOrCtrl+E', click: () => mainWindow.webContents.send('export-video') },
         { label: 'Exit', accelerator: 'CmdOrCtrl+Q', click: () => app.quit() }
       ]
     },
@@ -100,7 +101,8 @@ function createMainWindow() {
         { type: 'separator' },
         { label: 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut' },
         { label: 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy' },
-        { label: 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste' }
+        { label: 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste' },
+        { label: 'Add Effect to Timeline', click: () => mainWindow.webContents.send('add-effect-timeline') }
       ]
     },
     {
@@ -109,7 +111,8 @@ function createMainWindow() {
         { label: 'Toggle Full Screen', accelerator: 'F11', click: () => mainWindow.setFullScreen(!mainWindow.isFullScreen()) },
         { label: 'Zoom In', accelerator: 'CmdOrCtrl+=', click: () => mainWindow.webContents.zoomLevel += 0.5 },
         { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', click: () => mainWindow.webContents.zoomLevel -= 0.5 },
-        { label: 'Reset Zoom', accelerator: 'CmdOrCtrl+0', click: () => mainWindow.webContents.zoomLevel = 0 }
+        { label: 'Reset Zoom', accelerator: 'CmdOrCtrl+0', click: () => mainWindow.webContents.zoomLevel = 0 },
+        { label: 'Show Timeline', click: () => mainWindow.webContents.send('show-timeline') }
       ]
     },
     {
@@ -118,14 +121,15 @@ function createMainWindow() {
         { label: 'Effects Browser', click: () => mainWindow.webContents.send('open-effects-browser') },
         { label: 'Preview Settings', click: () => mainWindow.webContents.send('open-preview-settings') },
         { type: 'separator' },
-        { label: 'Console', click: () => mainWindow.webContents.send('toggle-console') }
+        { label: 'Console', click: () => mainWindow.webContents.send('toggle-console') },
+        { label: 'Trim Video', click: () => mainWindow.webContents.send('trim-video') }
       ]
     },
     {
       label: 'Help',
       submenu: [
         { label: 'Documentation', click: () => shell.openExternal('https://github.com/yourusername/as-editor/wiki') },
-        { label: 'About', click: () => dialog.showMessageBox(mainWindow, { title: 'About', message: 'AS-Editor PRO v1.2 by DevAlex' }) }
+        { label: 'About', click: () => dialog.showMessageBox(mainWindow, { title: 'About', message: 'AS-Editor PRO v1.3 by DevAlex - CapCut-like Editor' }) }
       ]
     }
   ];
@@ -162,9 +166,9 @@ app.on('activate', () => {
   }
 });
 
-// IPC handler for video processing with custom naming and fixed filter application
+// IPC handler for video processing with timed effects
 ipcMain.on('process-video', (event, data) => {
-  const { inputPath, videoEffects, audioEffects } = data; // Now separating video and audio
+  const { inputPath, timedEffects } = data; // timedEffects: array of {filter, start, end, type}
   
   // Custom output name
   const outputName = `edited_by_ALEXDEV_${path.basename(inputPath)}`;
@@ -173,32 +177,44 @@ ipcMain.on('process-video', (event, data) => {
   dialog.showSaveDialog(mainWindow, {
     title: 'Save Edited Video',
     defaultPath: defaultOutputPath,
-    filters: [{ name: 'Video Files', extensions: ['mp4', 'mkv', 'avi'] }]
+    filters: [{ name: 'Video Files', extensions: ['mp4'] }]
   }).then(result => {
     if (result.canceled) return;
     
     const outputPath = result.filePath || defaultOutputPath;
     
-    // Build FFmpeg command with separate video and audio filters
+    // Build FFmpeg command
     let command = ffmpeg(inputPath);
     
-    // Apply video effects
-    if (videoEffects.length > 0) {
-      command.videoFilters(videoEffects.join(','));
+    // Separate video and audio timed filters
+    let videoFilters = [];
+    let audioFilters = [];
+    
+    timedEffects.forEach(ef => {
+      let timedFilter = `${ef.filter}[enable='between(t,${ef.start},${ef.end})']`;
+      if (ef.type.includes('video')) {
+        videoFilters.push(timedFilter);
+      }
+      if (ef.type.includes('audio')) {
+        audioFilters.push(timedFilter);
+      }
+    });
+    
+    if (videoFilters.length > 0) {
+      command.videoFilters(videoFilters.join(','));
     }
     
-    // Apply audio effects
-    if (audioEffects.length > 0) {
-      command.audioFilters(audioEffects.join(','));
+    if (audioFilters.length > 0) {
+      command.audioFilters(audioFilters.join(','));
     }
     
-    // Advanced output options for quality
+    // Output options
     command
       .outputOptions('-c:v libx264')
-      .outputOptions('-preset veryslow')
-      .outputOptions('-crf 18')
+      .outputOptions('-preset medium')
+      .outputOptions('-crf 23')
       .outputOptions('-c:a aac')
-      .outputOptions('-b:a 192k')
+      .outputOptions('-b:a 128k')
       .outputOptions('-movflags +faststart')
       .on('start', (commandLine) => {
         log(`FFmpeg started: ${commandLine}`);
@@ -223,16 +239,17 @@ ipcMain.on('process-video', (event, data) => {
   });
 });
 
-// IPC for getting video info with metadata
-ipcMain.handle('get-video-info', async (event, inputPath) => {
+// IPC for getting video duration for timeline
+ipcMain.handle('get-video-duration', async (event, inputPath) => {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(inputPath, (err, metadata) => {
       if (err) {
         log(`FFprobe error: ${err.message}`, 'error');
         reject(err);
       } else {
-        log('FFprobe success');
-        resolve(metadata);
+        const duration = metadata.format.duration;
+        log('Video duration retrieved: ' + duration);
+        resolve(duration);
       }
     });
   });
@@ -266,7 +283,7 @@ ipcMain.on('open-video-dialog', (event) => {
   });
 });
 
-// IPC for saving project (stub for future)
+// IPC for saving project
 ipcMain.on('save-project', (event, projectData) => {
   dialog.showSaveDialog(mainWindow, {
     title: 'Save Project',
@@ -375,8 +392,6 @@ function validatePath(inputPath) {
   }
   log(`Path validated: ${inputPath}`);
 }
-
-// Example usage in process-video, but already there
 
 // More error handling
 app.on('before-quit', () => {
