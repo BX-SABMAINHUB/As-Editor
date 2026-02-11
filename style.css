@@ -1,4 +1,5 @@
-/* Enhanced Styles for AS-Editor PRO v1.3 - CapCut-like dark theme with animations, timeline, panels */
+/* Enhanced Styles for AS-Editor PRO v1.4 - CapCut-like dark theme with animations, timeline, panels */
+/* More design elements: gradients, shadows, more buttons */
 body {
   margin: 0;
   padding: 0;
@@ -16,16 +17,18 @@ body {
   display: flex;
   align-items: center;
   padding: 0 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 /* Toolbar with many buttons like CapCut */
 .toolbar {
-  background-color: #333;
+  background: linear-gradient(#333, #2a2a2a);
   height: 50px;
   display: flex;
   align-items: center;
   padding: 0 10px;
   overflow-x: auto;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .toolbar button {
@@ -36,12 +39,13 @@ body {
   border: none;
   border-radius: 3px;
   cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
+  transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
 }
 
 .toolbar button:hover {
   background-color: #0056b3;
   transform: scale(1.05);
+  box-shadow: 0 0 10px #007bff;
 }
 
 /* Container */
@@ -52,10 +56,11 @@ body {
 
 .left-sidebar {
   width: 200px;
-  background-color: #252526;
+  background: linear-gradient(#252526, #1e1e1e);
   padding: 10px;
   overflow-y: auto;
   border-right: 1px solid #3c3c3c;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.5);
 }
 
 .left-sidebar ul {
@@ -66,24 +71,29 @@ body {
 .left-sidebar li {
   margin: 5px 0;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: color 0.3s, background 0.3s;
+  padding: 5px;
+  border-radius: 3px;
 }
 
 .left-sidebar li:hover {
   color: #0ff;
+  background-color: #333;
 }
 
 .sidebar {
   width: 300px;
-  background-color: #252526;
+  background: linear-gradient(#252526, #1e1e1e);
   padding: 10px;
   overflow-y: auto;
   border-right: 1px solid #3c3c3c;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.5);
 }
 
 .sidebar h2 {
   color: #9cdcfc;
   margin-bottom: 10px;
+  text-shadow: 1px 1px 2px black;
 }
 
 #search-effects {
@@ -94,6 +104,7 @@ body {
   border: none;
   color: #d4d4d4;
   transition: box-shadow 0.3s;
+  border-radius: 3px;
 }
 
 #search-effects:focus {
@@ -113,17 +124,21 @@ body {
   color: #ffd700;
   border-bottom: 1px solid #3c3c3c;
   padding-bottom: 5px;
+  text-shadow: 1px 1px 2px black;
 }
 
 .effect-item {
   display: flex;
   flex-direction: column;
   margin: 5px 0;
-  transition: background 0.3s;
+  transition: background 0.3s, transform 0.2s;
+  padding: 5px;
+  border-radius: 3px;
 }
 
 .effect-item:hover {
   background-color: #333;
+  transform: translateX(5px);
 }
 
 .effect-item input[type="checkbox"] {
@@ -141,6 +156,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: #1e1e1e;
 }
 
 #drop-area {
@@ -153,12 +169,14 @@ body {
   justify-content: center;
   margin-bottom: 20px;
   transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(0,123,255,0.2);
 }
 
 #drop-area.highlight {
   border-color: #0ff;
   background-color: #2d2d2d;
   transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0,255,255,0.5);
 }
 
 #drop-area p {
@@ -179,6 +197,7 @@ body {
   transition: filter 0.5s ease;
   width: 100%;
   height: 400px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
 }
 
 .timeline {
@@ -189,6 +208,12 @@ body {
   border-radius: 5px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  transition: box-shadow 0.3s;
+}
+
+.timeline:hover {
+  box-shadow: 0 0 20px #007bff;
 }
 
 #timeline-canvas {
@@ -201,6 +226,7 @@ body {
   color: #9cdcfc;
   margin-bottom: 10px;
   animation: fadeIn 1s;
+  text-shadow: 1px 1px 2px black;
 }
 
 .progress-bar-container {
@@ -209,25 +235,56 @@ body {
   background-color: #3c3c3c;
   border-radius: 5px;
   overflow: hidden;
-  transition: height 0.3s;
+  transition: height 0.3s, box-shadow 0.3s;
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+.progress-bar-container:hover {
+  height: 15px;
+  box-shadow: 0 0 10px #007bff;
 }
 
 #progress-bar {
   height: 100%;
-  background-color: #007bff;
+  background: linear-gradient(#007bff, #0056b3);
   transition: width 0.5s ease-in-out;
 }
 
 .right-sidebar {
   width: 250px;
-  background-color: #252526;
+  background: linear-gradient(#252526, #1e1e1e);
   padding: 10px;
   overflow-y: auto;
   border-left: 1px solid #3c3c3c;
+  box-shadow: -2px 0 4px rgba(0,0,0,0.5);
 }
 
 .right-sidebar h2 {
   color: #9cdcfc;
+}
+
+.right-sidebar input, .right-sidebar select, .right-sidebar button {
+  width: 100%;
+  margin: 5px 0;
+  padding: 5px;
+  background-color: #3c3c3c;
+  color: #d4d4d4;
+  border: none;
+  border-radius: 3px;
+  transition: box-shadow 0.3s;
+}
+
+.right-sidebar input:focus, .right-sidebar select:focus {
+  box-shadow: 0 0 5px #007bff;
+}
+
+.right-sidebar button {
+  background-color: #007bff;
+  cursor: pointer;
+}
+
+.right-sidebar button:hover {
+  background-color: #0056b3;
 }
 
 .console {
@@ -242,6 +299,7 @@ body {
   width: 100%;
   display: none;
   transition: height 0.5s ease;
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.5);
 }
 
 .console p {
@@ -261,11 +319,13 @@ body {
   cursor: pointer;
   font-size: 16px;
   transition: all 0.3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 #continue-btn:hover {
   background-color: #0056b3;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
 }
 
 #continue-btn:disabled {
@@ -397,4 +457,4 @@ body {
   border-color: #0ff;
 }
 
-/* End of style.css - over 400 lines with CapCut-inspired enhancements */
+/* End of style.css - over 400 lines with more design */
