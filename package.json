@@ -1,7 +1,7 @@
 {
   "name": "as-editor",
-  "version": "1.2.0",
-  "description": "AS-Editor PRO: Advanced Video Editing Tool",
+  "version": "1.3.0",
+  "description": "AS-Editor PRO: Advanced Video Editing Tool like CapCut on Desktop",
   "main": "main.js",
   "author": "DevAlex",
   "license": "MIT",
