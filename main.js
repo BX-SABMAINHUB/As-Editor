@@ -2,6 +2,7 @@
 // Enhanced with more features, error handling, logging, and VS-like functionality
 // Handles window creation, splash screen with animation, video processing using FFmpeg
 // Added menu bar, toolbar integration, preview handling, and custom file naming
+// Fixed video saving by using videoFilters and audioFilters separately
 
 const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
 const path = require('path');
@@ -161,9 +162,9 @@ app.on('activate', () => {
   }
 });
 
-// IPC handler for video processing with custom naming
+// IPC handler for video processing with custom naming and fixed filter application
 ipcMain.on('process-video', (event, data) => {
-  const { inputPath, selectedEffects } = data;
+  const { inputPath, videoEffects, audioEffects } = data; // Now separating video and audio
   
   // Custom output name
   const outputName = `edited_by_ALEXDEV_${path.basename(inputPath)}`;
@@ -178,12 +179,17 @@ ipcMain.on('process-video', (event, data) => {
     
     const outputPath = result.filePath || defaultOutputPath;
     
-    // Build FFmpeg command with advanced options
+    // Build FFmpeg command with separate video and audio filters
     let command = ffmpeg(inputPath);
     
-    // Apply selected effects (assuming they are filter strings, possibly with params)
-    if (selectedEffects.length > 0) {
-      command.complexFilter(selectedEffects.map(ef => ({ filter: ef })).flat());
+    // Apply video effects
+    if (videoEffects.length > 0) {
+      command.videoFilters(videoEffects.join(','));
+    }
+    
+    // Apply audio effects
+    if (audioEffects.length > 0) {
+      command.audioFilters(audioEffects.join(','));
     }
     
     // Advanced output options for quality
