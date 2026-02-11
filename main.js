@@ -1,8 +1,8 @@
-// Main process for AS-Editor PRO v1.3 - CapCut-like on Desktop
+// Main process for AS-Editor PRO v1.4 - CapCut-like on Desktop
 // Enhanced with timeline support for timed effects
 // Handles window creation, splash screen with animation, video processing using FFmpeg with timed filters
 // Added menu bar, toolbar integration, preview handling, and custom file naming
-// Fixed video saving by using videoFilters and audioFilters separately
+// Fixed drag and drop error handling, ensured FFmpeg handles various formats
 
 const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
 const path = require('path');
@@ -65,7 +65,7 @@ function createMainWindow() {
     height: 900,
     minWidth: 1000,
     minHeight: 700,
-    title: "AS-Editor PRO v1.3",
+    title: "AS-Editor PRO v1.4",
     icon: path.join(__dirname, 'assets/icon.ico'),
     webPreferences: {
       nodeIntegration: true,
@@ -129,7 +129,7 @@ function createMainWindow() {
       label: 'Help',
       submenu: [
         { label: 'Documentation', click: () => shell.openExternal('https://github.com/yourusername/as-editor/wiki') },
-        { label: 'About', click: () => dialog.showMessageBox(mainWindow, { title: 'About', message: 'AS-Editor PRO v1.3 by DevAlex - CapCut-like Editor' }) }
+        { label: 'About', click: () => dialog.showMessageBox(mainWindow, { title: 'About', message: 'AS-Editor PRO v1.4 by AlexDev - CapCut-like Editor' }) }
       ]
     }
   ];
@@ -208,12 +208,13 @@ ipcMain.on('process-video', (event, data) => {
       command.audioFilters(audioFilters.join(','));
     }
     
-    // Output options
+    // Output options - added -strict experimental for aac, and error handling for formats
     command
       .outputOptions('-c:v libx264')
       .outputOptions('-preset medium')
       .outputOptions('-crf 23')
       .outputOptions('-c:a aac')
+      .outputOptions('-strict experimental')
       .outputOptions('-b:a 128k')
       .outputOptions('-movflags +faststart')
       .on('start', (commandLine) => {
@@ -247,7 +248,7 @@ ipcMain.handle('get-video-duration', async (event, inputPath) => {
         log(`FFprobe error: ${err.message}`, 'error');
         reject(err);
       } else {
-        const duration = metadata.format.duration;
+        const duration = metadata.format.duration || 0;
         log('Video duration retrieved: ' + duration);
         resolve(duration);
       }
@@ -274,7 +275,7 @@ ipcMain.handle('list-ffmpeg-filters', async () => {
 ipcMain.on('open-video-dialog', (event) => {
   dialog.showOpenDialog(mainWindow, {
     title: 'Select Video',
-    filters: [{ name: 'Videos', extensions: ['mp4', 'mkv', 'avi', 'mov'] }],
+    filters: [{ name: 'Videos', extensions: ['mp4', 'mkv', 'avi', 'mov', 'webm', 'flv'] }],
     properties: ['openFile']
   }).then(result => {
     if (!result.canceled && result.filePaths.length > 0) {
