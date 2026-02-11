@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AS-Editor PRO v1.3 - CapCut-like Editor</title>
+  <title>AS-Editor PRO v1.4 - CapCut-like Editor</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -33,13 +33,30 @@
     <button>Trim Clip</button>
     <button>Split Clip</button>
     <button>Add Transition</button>
+    <button>Add Text</button>
+    <button>Add Music</button>
+    <button>Voiceover</button>
+    <button>Stickers</button>
+    <button>Filters</button>
+    <button>Adjust Speed</button>
+    <button>Volume Control</button>
+    <button>Crop Video</button>
+    <button>Rotate Video</button>
+    <button>Mirror Video</button>
+    <button>Add Effects Layer</button>
+    <button>Timeline Zoom In</button>
+    <button>Timeline Zoom Out</button>
   </div>
   <div class="container">
     <div class="left-sidebar">
       <h2>Project Explorer</h2>
       <ul>
         <li>Video Assets</li>
+        <li>Audio Assets</li>
         <li>Effects Library</li>
+        <li>Transitions</li>
+        <li>Text Templates</li>
+        <li>Stickers</li>
         <li>Timeline Layers</li>
         <li>Solution Items</li>
         <li>References</li>
@@ -58,6 +75,9 @@
         <li>Watch</li>
         <li>Autos</li>
         <li>Locals</li>
+        <li>Import Media</li>
+        <li>Export Settings</li>
+        <li>Project Settings</li>
       </ul>
     </div>
     <div class="sidebar">
@@ -79,6 +99,14 @@
     <div id="properties-panel" class="right-sidebar">
       <h2>Properties</h2>
       <!-- Dynamic properties -->
+      <input type="number" placeholder="Start Time (s)">
+      <input type="number" placeholder="End Time (s)">
+      <select>
+        <option>Apply to Video</option>
+        <option>Apply to Audio</option>
+      </select>
+      <button>Apply Changes</button>
+      <button>Reset</button>
     </div>
   </div>
   <div id="console-output" class="console" style="display: none;">
