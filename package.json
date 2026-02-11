@@ -1,9 +1,9 @@
 {
   "name": "as-editor",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "AS-Editor PRO: Advanced Video Editing Tool like CapCut on Desktop",
   "main": "main.js",
-  "author": "DevAlex",
+  "author": "AlexDev",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -22,7 +22,7 @@
     "electron-builder": "^24.13.3"
   },
   "build": {
-    "appId": "com.devalex.as-editor",
+    "appId": "com.alexdev.as-editor",
     "productName": "AS-Editor PRO",
     "directories": {
       "output": "dist"
