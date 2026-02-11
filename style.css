@@ -1,5 +1,4 @@
-/* Enhanced Styles for AS-Editor PRO v1.2 - Professional VS-like dark theme with animations, more panels, buttons */
-/* Global styles */
+/* Enhanced Styles for AS-Editor PRO v1.3 - CapCut-like dark theme with animations, timeline, panels */
 body {
   margin: 0;
   padding: 0;
@@ -19,10 +18,10 @@ body {
   padding: 0 10px;
 }
 
-/* Toolbar with many buttons */
+/* Toolbar with many buttons like CapCut */
 .toolbar {
   background-color: #333;
-  height: 40px;
+  height: 50px;
   display: flex;
   align-items: center;
   padding: 0 10px;
@@ -45,10 +44,10 @@ body {
   transform: scale(1.05);
 }
 
-/* Container with more panels */
+/* Container */
 .container {
   display: flex;
-  height: calc(100vh - 120px); /* Space for toolbar, menu, button, console */
+  height: calc(100vh - 130px); /* Adjusted for toolbar, menu, button, console */
 }
 
 .left-sidebar {
@@ -178,23 +177,24 @@ body {
   border: 1px solid #3c3c3c;
   border-radius: 5px;
   transition: filter 0.5s ease;
+  width: 100%;
+  height: 400px;
 }
 
-#timeline {
+.timeline {
   width: 100%;
-  height: 100px;
+  height: 150px; /* Increased for CapCut-like timeline */
   background-color: #333;
   margin: 10px 0;
   border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9cdcfc;
-  transition: background 0.3s;
+  position: relative;
+  overflow: hidden;
 }
 
-#timeline:hover {
-  background-color: #444;
+#timeline-canvas {
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
 }
 
 #status-text {
@@ -370,9 +370,12 @@ body {
     flex-wrap: wrap;
     height: auto;
   }
+  #preview-video {
+    height: 200px;
+  }
 }
 
-/* Additional animations and styles */
+/* Additional animations and styles for CapCut feel */
 .effect-item label {
   transition: color 0.3s;
 }
@@ -385,4 +388,13 @@ body {
   height: 15px;
 }
 
-/* End of style.css - over 300 lines */
+.timeline {
+  border: 1px solid #007bff;
+  transition: border-color 0.3s;
+}
+
+.timeline:hover {
+  border-color: #0ff;
+}
+
+/* End of style.css - over 400 lines with CapCut-inspired enhancements */
