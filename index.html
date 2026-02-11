@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AS-Editor PRO v1.2</title>
+  <title>AS-Editor PRO v1.3 - CapCut-like Editor</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="menu-bar" class="menu-bar">
-    <!-- Custom menu if Electron menu not sufficient -->
+    <!-- Custom menu if needed -->
   </div>
   <div id="toolbar" class="toolbar">
     <button onclick="ipcRenderer.send('open-video-dialog')">Open</button>
@@ -19,7 +19,6 @@
     <button>Export</button>
     <button>Settings</button>
     <button>Help</button>
-    <!-- More buttons like VS: Build, Debug, etc. stubs -->
     <button>Build Project</button>
     <button>Debug Video</button>
     <button>Analyze Effects</button>
@@ -30,6 +29,10 @@
     <button>Minimize</button>
     <button>Maximize</button>
     <button>Close</button>
+    <button>Add Keyframe</button>
+    <button>Trim Clip</button>
+    <button>Split Clip</button>
+    <button>Add Transition</button>
   </div>
   <div class="container">
     <div class="left-sidebar">
@@ -38,7 +41,6 @@
         <li>Video Assets</li>
         <li>Effects Library</li>
         <li>Timeline Layers</li>
-        <!-- More like VS -->
         <li>Solution Items</li>
         <li>References</li>
         <li>Properties</li>
